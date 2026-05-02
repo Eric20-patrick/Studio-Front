@@ -7,6 +7,7 @@ import {
   Scissors,
   LogOut,
   ClipboardList,
+  UserCircle,
 } from "lucide-react";
 
 export default function AdminLayout() {
@@ -14,72 +15,108 @@ export default function AdminLayout() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/admin/login", { replace: true });
+    try {
+      await logout();
+      navigate("/admin/login", { replace: true });
+    } catch (error) {
+      console.error("Erro ao deslogar:", error);
+    }
   };
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
       isActive
-        ? "bg-gold/15 text-gold-dark font-semibold"
-        : "text-foreground/70 hover:bg-muted"
+        ? "bg-gold/15 text-gold-dark font-semibold shadow-sm"
+        : "text-foreground/70 hover:bg-muted hover:text-foreground"
     }`;
 
   return (
     <div className="min-h-screen bg-background flex">
-      <aside className="w-60 bg-card border-r border-border flex flex-col">
-        <div className="p-5 border-b border-border">
-          <Link to="/admin" className="font-display font-bold text-lg">
+      {/* Sidebar */}
+      <aside className="w-64 bg-card border-r border-border flex flex-col sticky top-0 h-screen">
+        <div className="p-6 border-b border-border">
+          <Link
+            to="/admin"
+            className="font-display font-bold text-xl tracking-tight flex items-center gap-2"
+          >
+            <div className="w-2 h-6 bg-gold rounded-full" />
             Studio Neo
           </Link>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Painel administrativo
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium mt-1 opacity-70">
+            Painel de Gestão
           </p>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
+        {/* Navegação Principal */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {hasRole("ADMIN") && (
             <NavLink to="/admin" end className={linkClass}>
-              <LayoutDashboard size={16} /> Dashboard
+              <LayoutDashboard size={18} /> Dashboard
             </NavLink>
           )}
+
           <NavLink to="/admin/recepcao" className={linkClass}>
-            <ClipboardList size={16} /> Fila do dia
+            <ClipboardList size={18} /> Fila do dia
           </NavLink>
+
           <NavLink to="/admin/agendamentos" className={linkClass}>
-            <Calendar size={16} /> Agendamentos
+            <Calendar size={18} /> Agendamentos
           </NavLink>
+
           {hasRole("ADMIN") && (
             <>
+              <div className="pt-4 pb-2 px-3">
+                <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-tighter">
+                  Configurações
+                </p>
+              </div>
               <NavLink to="/admin/profissionais" className={linkClass}>
-                <Users size={16} /> Profissionais
+                <Users size={18} /> Profissionais
               </NavLink>
               <NavLink to="/admin/procedimentos" className={linkClass}>
-                <Scissors size={16} /> Procedimentos
+                <Scissors size={18} /> Procedimentos
               </NavLink>
             </>
           )}
         </nav>
 
-        <div className="p-3 border-t border-border">
-          <div className="px-3 py-2 mb-2">
-            <p className="text-xs font-semibold truncate">{user?.name}</p>
-            <p className="text-[10px] text-muted-foreground">{user?.email}</p>
-            <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-gold/20 text-gold-dark font-bold">
-              {user?.role}
-            </span>
+        {/* Rodapé da Sidebar - Usuário */}
+        <div className="p-4 border-t border-border bg-muted/30">
+          <div className="flex items-center gap-3 px-2 mb-4">
+            <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold-dark border border-gold/20">
+              <UserCircle size={24} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold truncate leading-none mb-1">
+                {user?.name || "Usuário"}
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate opacity-80">
+                {user?.email}
+              </p>
+            </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <LogOut size={14} /> Sair
-          </button>
+
+          <div className="flex flex-col gap-1">
+            <div className="px-2 pb-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-gold/20 text-gold-dark font-black uppercase tracking-tighter">
+                {user?.role}
+              </span>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors font-medium"
+            >
+              <LogOut size={16} /> Sair do sistema
+            </button>
+          </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Área de Conteúdo */}
+      <main className="flex-1 overflow-auto relative bg-[#fafafa]">
+        {/* Background sutil para dar contraste com os cards brancos */}
+        <div className="p-6 lg:p-10 max-w-7xl mx-auto min-h-full">
           <Outlet />
         </div>
       </main>

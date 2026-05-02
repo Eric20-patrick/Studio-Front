@@ -235,18 +235,20 @@ export default function AdminBookings() {
 function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: any) {
   const phoneDigits = b.clientPhone?.replace(/\D/g, "") || "";
 
-  // MÉDOTO INFALÍVEL: Trata a data como string para ignorar conversão de Timezone do navegador
-  const formatAdminDate = (dateString: string) => {
-    if (!dateString) return "--/--/----";
+  // Mesmo instante que o e-mail (Intl em America/Sao_Paulo), não a parte da data em UTC
+  const formatAdminDate = (isoString: string) => {
+    if (!isoString) return "--/--/----";
     try {
-      // Extrai apenas a parte "AAAA-MM-DD" da string ISO
-      const datePart = dateString.split("T")[0];
-      const [year, month, day] = datePart.split("-");
-      return `${day}/${month}/${year}`;
+      const d = new Date(isoString);
+      if (Number.isNaN(d.getTime())) return "--/--/----";
+      return d.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "America/Sao_Paulo",
+      });
     } catch {
-      // Fallback em caso de formato inesperado
-      const d = new Date(dateString);
-      return `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
+      return "--/--/----";
     }
   };
 

@@ -7,23 +7,41 @@ export function formatPhone(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 }
 
-// CORREÇÃO: Usar Intl para garantir que ele não mude o dia baseado em horas
+/**
+ * REPARO: formatDate
+ * Em vez de new Date(date), que falha com strings "YYYY-MM-DD",
+ * usamos o parseDateLocal que você já tem para garantir que o dia seja preservado.
+ */
 export function formatDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-
-  // Força o uso dos métodos "getUTC" para evitar o fuso horário local
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const year = d.getUTCFullYear();
-
-  return `${day}/${month}/${year}`;
+  const d = typeof date === "string" ? parseDateLocal(date) : date;
+  return d.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    // Removido timeZone aqui para usar o objeto "ajustado" localmente
+  });
 }
 
+// ─── Converte Date para YYYY-MM-DD sem bug de timezone ───
 export function toIsoDate(date: Date): string {
-  // CORREÇÃO: Em vez de pegar getFullYear/Month/Date (que depende do fuso local),
-  // usamos o ISOString e pegamos apenas a parte da data.
-  // Se a data foi salva com Meio-Dia (como sugeri no Contexto), isso nunca falha.
-  return date.toISOString().split("T")[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * REPARO: parseDateLocal
+ * Esta função é a sua melhor amiga. Ela quebra a string e monta a data
+ * baseada nos números literais, evitando que o JS tente converter fuso.
+ */
+export function parseDateLocal(dateStr: string): Date {
+  if (!dateStr) return new Date();
+  // Se vier um ISO completo, pega só a parte da data
+  const cleanDate = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr;
+  const [year, month, day] = cleanDate.split("-").map(Number);
+  // Criamos a data no horário local, evitando o fallback para UTC
+  return new Date(year!, month! - 1, day!, 12, 0, 0, 0);
 }
 
 export function isWeekday(date: Date): boolean {
@@ -49,6 +67,7 @@ const WEEKDAY_LABEL: Record<string, string> = {
   SATURDAY: "Sáb",
   SUNDAY: "Dom",
 };
+
 const WEEKDAY_ORDER: Record<string, number> = {
   MONDAY: 1,
   TUESDAY: 2,
@@ -65,12 +84,12 @@ export function formatWorkingHours(
   if (!blocks || blocks.length === 0) return "";
   const byDay = new Map<string, string[]>();
   blocks.forEach((b) => {
-    const list = byDay.get(b.weekDay) || [];
+    const list = byDay.get(b.weekDay) ?? [];
     list.push(`${b.startTime}-${b.endTime}`);
     byDay.set(b.weekDay, list);
   });
   const days = Array.from(byDay.keys()).sort(
-    (a, b) => (WEEKDAY_ORDER[a] || 0) - (WEEKDAY_ORDER[b] || 0),
+    (a, b) => (WEEKDAY_ORDER[a] ?? 0) - (WEEKDAY_ORDER[b] ?? 0),
   );
   if (days.length === 0) return "";
 
@@ -84,21 +103,62 @@ export function formatWorkingHours(
     .join(" • ");
 }
 
-// CORREÇÃO: formatTimeFromIso não deve criar um novo Date se o objetivo for apenas ler o tempo
-export function formatTimeFromIso(iso: string): string {
+/**
+ * REPARO: formatTimeFromIso
+ * Se a hora está vindo "uma hora antes", é porque a data de referência no Objeto Date
+ * pode estar caindo em período de Horário de Verão histórico ou fuso errado.
+ */
+export function formatTimeFromIso(iso: string | undefined | null): string {
   if (!iso) return "";
-  // Se for uma string ISO completa, pega a parte do tempo
-  const timePart = iso.includes("T") ? iso.split("T")[1].substring(0, 5) : iso;
-  return timePart;
+  const date = new Date(iso);
+
+  return date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+    hour12: false,
+  });
+}
+
+/**
+ * REPARO: formatDateLong
+ * Usa o parseDateLocal para evitar erro de 1 dia atrás.
+ */
+export function formatDateLong(date: Date | string): string {
+  const d = typeof date === "string" ? parseDateLocal(date) : date;
+  return d.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/**
+ * REPARO: formatDateShort
+ */
+export function formatDateShort(date: Date | string): string {
+  const d = typeof date === "string" ? parseDateLocal(date) : date;
+  return d.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+  });
 }
 
 export function formatCurrency(value: number | undefined | null): string {
   if (value === undefined || value === null) return "";
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
 }
 
 export function getPeriodFromTime(iso: string): "manha" | "tarde" {
   const date = new Date(iso);
-  const h = date.getHours();
-  return h < 12 ? "manha" : "tarde";
+  const h = date.toLocaleString("pt-BR", {
+    hour: "numeric",
+    hour12: false,
+    timeZone: "America/Sao_Paulo",
+  });
+  return parseInt(h) < 12 ? "manha" : "tarde";
 }

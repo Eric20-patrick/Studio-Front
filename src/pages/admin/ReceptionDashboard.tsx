@@ -9,13 +9,27 @@ import {
   completeBooking,
 } from "@/services/bookingService";
 import { Loader2, MessageCircle, Check, X, CheckCheck } from "lucide-react";
-import { formatTimeFromIso, toIsoDate } from "@/utils";
+// Importamos as funções de utilidade
+import { formatTimeFromIso } from "@/utils";
 
 export default function ReceptionDashboard() {
   const [data, setData] = useState<ReceptionDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [date, setDate] = useState(toIsoDate(new Date()));
+
+  /**
+   * CORREÇÃO: Inicializamos a data pegando os valores locais (ano, mês, dia)
+   * Isso evita que agendamentos feitos à noite (após 21h) pulem para o dia seguinte
+   * devido ao fuso horário UTC na conversão ISO.
+   */
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
+
   const [actionId, setActionId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState("");
@@ -25,6 +39,7 @@ export default function ReceptionDashboard() {
   }, []);
 
   const refresh = () => {
+    if (!date) return;
     setLoading(true);
     setError("");
     getReceptionDashboard(date)
@@ -32,6 +47,8 @@ export default function ReceptionDashboard() {
       .catch((e) => setError(e?.message || "Erro ao carregar agenda"))
       .finally(() => setLoading(false));
   };
+
+  // Recarrega os dados sempre que a data mudar
   useEffect(refresh, [date]);
 
   const handleConfirm = async (id: string) => {
@@ -45,6 +62,7 @@ export default function ReceptionDashboard() {
       setActionId(null);
     }
   };
+
   const handleComplete = async (id: string) => {
     setActionId(id);
     try {
@@ -56,6 +74,7 @@ export default function ReceptionDashboard() {
       setActionId(null);
     }
   };
+
   const handleCancel = async () => {
     if (!cancelTarget || cancelReason.trim().length < 5) {
       alert("Motivo precisa ter pelo menos 5 caracteres");
@@ -82,7 +101,7 @@ export default function ReceptionDashboard() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="px-3 py-2 rounded-lg border border-input bg-background text-sm"
+          className="px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold/20 outline-none"
         />
       </div>
 
@@ -237,13 +256,14 @@ export default function ReceptionDashboard() {
         )
       )}
 
+      {/* Modal de Cancelamento */}
       {cancelTarget && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/60 backdrop-blur-sm"
           onClick={() => setCancelTarget(null)}
         >
           <div
-            className="bg-card rounded-xl p-6 w-full max-w-md space-y-4"
+            className="bg-card rounded-xl p-6 w-full max-w-md space-y-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="font-display font-bold">Motivo do cancelamento</h3>
@@ -251,8 +271,6 @@ export default function ReceptionDashboard() {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={4}
-              minLength={5}
-              maxLength={500}
               className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 ring-gold resize-none"
               placeholder="Explique o motivo (mínimo 5 caracteres)"
             />

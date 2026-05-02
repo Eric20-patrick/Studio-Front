@@ -1,10 +1,17 @@
-export type Period = 'manha' | 'tarde';
+export type Period = "manha" | "tarde";
 
-export type WeekDay = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type WeekDay =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
 
-export type UserRole = 'ADMIN' | 'RECEPTION';
+export type UserRole = "ADMIN" | "RECEPTION";
 
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
 
 export interface PeriodOption {
   id: Period;
@@ -19,32 +26,37 @@ export interface WorkingHourBlock {
   endTime: string;
 }
 
+// ─── Professional ─────────────────────────────────────────
+// workingHours é opcional porque alguns endpoints não retornam
+// (ex: GET /professionals sem include explícito)
 export interface Professional {
   id: string;
   name: string;
-  email?: string;
-  phone?: string;
+  email?: string | null;
+  phone?: string | null;
   specialties: string[];
-  workingHours: WorkingHourBlock[];
-  avatarUrl?: string;
+  workingHours?: WorkingHourBlock[]; // ← opcional
+  avatarUrl?: string | null;
   isActive?: boolean;
-  // legacy/compat fields used by some UI
+  // campos de compatibilidade com mocks antigos
   specialty?: string;
   bio?: string;
   photo?: string;
 }
 
+// ─── Procedure ────────────────────────────────────────────
 export interface Procedure {
   id: string;
   name: string;
   category: string;
-  description?: string;
-  duration: number | string; // minutes from API; some legacy strings
+  description?: string | null;
+  duration: number | string; // number da API, string em mocks legados
   interval?: number;
   isActive?: boolean;
-  price?: number; // only available in admin endpoints
+  price?: number; // só em endpoints admin
 }
 
+// ─── Booking form (front-end state) ──────────────────────
 export interface ProcedureProfessional {
   procedure: Procedure;
   professional: Professional | null;
@@ -52,8 +64,8 @@ export interface ProcedureProfessional {
 }
 
 export interface AvailabilitySlot {
-  startTime: string;
-  endTime: string;
+  startTime: string; // ISO string
+  endTime: string; // ISO string
 }
 
 export interface ProfessionalAvailability {
@@ -77,12 +89,10 @@ export interface BookingForm {
   phone: string;
   email: string;
   observations: string;
-  // procedures kept for compat
   procedures: Procedure[];
   selectedDates: Date[];
   selectedPeriods: Period[];
   procedureProfessionals: ProcedureProfessional[];
-  // new structured items sent to backend
   items: BookingItemSelection[];
 }
 
@@ -92,17 +102,40 @@ export interface BookingResponse {
   message?: string;
 }
 
+// ─── Auth ─────────────────────────────────────────────────
+export interface UserPermissions {
+  canManageProfessionals: boolean;
+  canManageProcedures: boolean;
+  canViewRevenue: boolean;
+  canExportData: boolean;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
   role: UserRole;
   isActive?: boolean;
+  permissions?: UserPermissions | null;
 }
 
+// ─── Booking (API response) ───────────────────────────────
 export interface BookingItem {
-  procedure: { id: string; name: string; category: string; duration: number; price?: number; priceFormatted?: string };
-  professional: { id: string; name: string; phone?: string };
+  id?: string;
+  procedure: {
+    id: string;
+    name: string;
+    category: string;
+    duration: number;
+    price?: number;
+    priceFormatted?: string;
+  };
+  professional: {
+    id: string;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+  };
   startTime: string;
   endTime: string;
   amountCharged?: number;
@@ -114,20 +147,30 @@ export interface Booking {
   status: BookingStatus;
   clientName: string;
   clientPhone: string;
-  clientEmail?: string;
+  clientEmail?: string | null;
   totalAmount: number;
   totalAmountFormatted?: string;
   items: BookingItem[];
   cancellationReason?: string | null;
-  observations?: string;
+  observations?: string | null;
   createdAt: string;
+  // campo do dashboard da recepção
+  client?: {
+    name: string;
+    phone: string;
+    phoneFormatted: string;
+    whatsappLink: string;
+    email?: string | null;
+  };
 }
 
+// ─── Time / Slots ─────────────────────────────────────────
 export interface TimeSlot {
   time: string;
   available: boolean;
 }
 
+// ─── Blog ─────────────────────────────────────────────────
 export interface BlogPost {
   id: string;
   title: string;
@@ -137,18 +180,62 @@ export interface BlogPost {
   slug: string;
 }
 
+// ─── Testimonial ──────────────────────────────────────────
 export interface Testimonial {
   id: string;
   name: string;
   rating: number;
   comment: string;
   photo?: string;
+  role?: string;
 }
 
+// ─── Promotion ────────────────────────────────────────────
 export interface Promotion {
   id: string;
   title: string;
   description: string;
   discount: string;
   validUntil: string;
+}
+
+// ─── Gallery ──────────────────────────────────────────────
+export interface GalleryImage {
+  id: string;
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
+
+// ─── Dashboard ────────────────────────────────────────────
+export interface ReceptionSummary {
+  total: number;
+  pending: number;
+  confirmed: number;
+  expectedRevenue: number;
+  expectedRevenueFormatted: string;
+  confirmedRevenue?: number;
+  confirmedRevenueFormatted?: string;
+  realizedRevenue?: number;
+  realizedRevenueFormatted?: string;
+}
+
+export interface ProfessionalSummaryItem {
+  procedureName: string;
+  startTime: string;
+  clientName: string;
+}
+
+export interface ProfessionalSummary {
+  professional: { id: string; name: string };
+  totalAppointments: number;
+  items: ProfessionalSummaryItem[];
+}
+
+export interface ReceptionDashboardData {
+  date: string;
+  summary: ReceptionSummary;
+  bookings: Booking[];
+  byProfessional: ProfessionalSummary[];
 }
