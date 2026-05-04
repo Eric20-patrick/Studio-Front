@@ -1,4 +1,4 @@
-import { api } from '@/services/api';
+﻿import { api } from '@/services/api';
 
 export interface AdminDashboardData {
   summary: {
@@ -28,16 +28,25 @@ export interface ReceptionDashboardData {
     total: number;
     pending: number;
     confirmed: number;
+    completed: number;
     expectedRevenue: number;
     expectedRevenueFormatted: string;
   };
   bookings: Array<{
     id: string;
     status: string;
+    observations?: string | null;
     client: { name: string; phoneFormatted: string; whatsappLink: string; email?: string };
     items: Array<{
-      procedure: { name: string; category: string; duration: number; price?: number; priceFormatted?: string };
-      professional: { name: string; phone?: string };
+      procedure: {
+        id: string;
+        name: string;
+        category: string;
+        duration: number;
+        price?: number;
+        priceFormatted?: string;
+      };
+      professional: { id: string; name: string; phone?: string };
       startTime: string;
       endTime: string;
       amountChargedFormatted?: string;
@@ -51,6 +60,16 @@ export async function getAdminDashboard(revenueFilter: 'day' | 'week' | 'month' 
   return api.get<AdminDashboardData>('/dashboard/admin', { query: { revenueFilter } });
 }
 
-export async function getReceptionDashboard(date?: string): Promise<ReceptionDashboardData> {
-  return api.get<ReceptionDashboardData>('/dashboard/reception', { query: { date } });
+export async function getReceptionDashboard(params?: {
+  date?: string;
+  professionalId?: string;
+  procedureId?: string;
+}): Promise<ReceptionDashboardData> {
+  return api.get<ReceptionDashboardData>('/dashboard/reception', {
+    query: {
+      date: params?.date,
+      professionalId: params?.professionalId,
+      procedureId: params?.procedureId,
+    },
+  });
 }

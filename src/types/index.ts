@@ -1,4 +1,4 @@
-export type Period = "manha" | "tarde";
+﻿export type Period = "manha" | "tarde";
 
 export type WeekDay =
   | "MONDAY"
@@ -110,6 +110,14 @@ export interface UserPermissions {
   canExportData: boolean;
 }
 
+/** Permissões delegadas pelo admin para perfil RECEPCION */
+export interface DelegatedPermissions {
+  canManageProfessionals?: boolean;
+  canManageProcedures?: boolean;
+  canViewAdminDashboard?: boolean;
+  canExportReports?: boolean;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -117,6 +125,7 @@ export interface AuthUser {
   role: UserRole;
   isActive?: boolean;
   permissions?: UserPermissions | null;
+  delegatedPermissions?: DelegatedPermissions;
 }
 
 // ─── Booking (API response) ───────────────────────────────
@@ -175,6 +184,8 @@ export interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
+  /** Texto completo exibido no modal “Ler mais” */
+  content: string;
   date: string;
   photo: string;
   slug: string;

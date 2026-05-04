@@ -1,4 +1,4 @@
-export const SALON_INFO = {
+﻿export const SALON_INFO = {
   name: 'Studio Neo',
   phone: '5511977485165',
   address: 'São Paulo, SP',

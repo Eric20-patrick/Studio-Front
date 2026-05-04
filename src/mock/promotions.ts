@@ -1,4 +1,4 @@
-import { Promotion } from '@/types';
+﻿import { Promotion } from '@/types';
 
 export const mockPromotions: Promotion[] = [
   { id: '1', title: 'Combo Beleza Completa', description: 'Corte + Escova + Manicure com preço especial para você arrasar!', discount: '25% OFF', validUntil: '2024-04-30' },

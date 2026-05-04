@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+﻿import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { api, getAccessToken, setAccessToken } from '@/services/api';
-import { AuthUser, UserRole } from '@/types';
+import { AuthUser, DelegatedPermissions, UserRole } from '@/types';
 
 interface LoginResp {
   accessToken: string;
@@ -13,6 +13,8 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (role: UserRole | UserRole[]) => boolean;
+  /** Admin sempre; recepção só se o admin delegou a permissão */
+  canDelegated: (key: keyof DelegatedPermissions) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -62,8 +64,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roles.includes(user.role);
   }, [user]);
 
+  const canDelegated = useCallback(
+    (key: keyof DelegatedPermissions) => {
+      if (!user) return false;
+      if (user.role === 'ADMIN') return true;
+      return Boolean(user.delegatedPermissions?.[key]);
+    },
+    [user],
+  );
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasRole, canDelegated }}>
       {children}
     </AuthContext.Provider>
   );

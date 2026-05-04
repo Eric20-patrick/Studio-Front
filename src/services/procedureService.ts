@@ -1,4 +1,4 @@
-import { Procedure } from '@/types';
+﻿import { Procedure } from '@/types';
 import { api } from '@/services/api';
 
 export async function getProcedures(params?: { search?: string; category?: string }): Promise<Procedure[]> {

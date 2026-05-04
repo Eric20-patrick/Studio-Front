@@ -1,4 +1,4 @@
-import { WorkingHourBlock } from "@/types";
+﻿import { WorkingHourBlock } from "@/types";
 
 export function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "");

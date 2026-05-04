@@ -1,4 +1,4 @@
-import { Calendar } from 'lucide-react';
+﻿import { Calendar } from 'lucide-react';
 import { useBooking } from '@/hooks/useBooking';
 
 export default function FloatingBookingButton() {

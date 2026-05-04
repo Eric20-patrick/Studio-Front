@@ -1,4 +1,4 @@
-import { Testimonial } from '@/types';
+﻿import { Testimonial } from '@/types';
 
 export const mockTestimonials: Testimonial[] = [
   { id: '1', name: 'Mariana Silva', rating: 5, comment: 'Atendimento impecável! Saí do salão me sentindo renovada. A equipe é maravilhosa e super atenciosa.' },

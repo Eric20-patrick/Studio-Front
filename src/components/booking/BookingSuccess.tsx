@@ -1,4 +1,4 @@
-import { useBooking } from '@/hooks/useBooking';
+﻿import { useBooking } from '@/hooks/useBooking';
 import { CheckCircle } from 'lucide-react';
 
 export default function BookingSuccess() {

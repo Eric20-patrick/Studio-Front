@@ -1,4 +1,4 @@
-import { BlogPost } from '@/types';
+﻿import { BlogPost } from '@/types';
 import { mockBlogPosts } from '@/mock/blogPosts';
 
 export async function getBlogPosts(): Promise<BlogPost[]> {

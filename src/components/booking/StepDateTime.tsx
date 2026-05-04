@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+﻿import { useEffect, useState, useMemo } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import {
   Period,
@@ -149,6 +149,10 @@ export default function StepDateTime() {
             onSelect={handleDate}
             disabled={(d) => d < today || d > maxDate || !isWeekday(d)}
             className="rounded-lg mx-auto"
+            classNames={{
+              day_today:
+                "bg-transparent font-semibold text-foreground ring-1 ring-border aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:ring-0",
+            }}
             initialFocus
           />
         </div>

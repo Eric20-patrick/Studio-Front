@@ -1,4 +1,7 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+﻿"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import {
   LayoutDashboard,
@@ -10,33 +13,38 @@ import {
   UserCircle,
 } from "lucide-react";
 
-export default function AdminLayout() {
-  const { user, logout, hasRole } = useAuth();
-  const navigate = useNavigate();
+function navClass(isActive: boolean) {
+  return `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+    isActive
+      ? "bg-gold/15 text-gold-dark font-semibold shadow-sm"
+      : "text-foreground/70 hover:bg-muted hover:text-foreground"
+  }`;
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, logout, hasRole, canDelegated } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/admin/login", { replace: true });
+      router.replace("/admin/login");
     } catch (error) {
       console.error("Erro ao deslogar:", error);
     }
   };
 
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
-      isActive
-        ? "bg-gold/15 text-gold-dark font-semibold shadow-sm"
-        : "text-foreground/70 hover:bg-muted hover:text-foreground"
-    }`;
-
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
       <aside className="w-64 bg-card border-r border-border flex flex-col sticky top-0 h-screen">
         <div className="p-6 border-b border-border">
           <Link
-            to="/admin"
+            href="/admin"
             className="font-display font-bold text-xl tracking-tight flex items-center gap-2"
           >
             <div className="w-2 h-6 bg-gold rounded-full" />
@@ -47,40 +55,57 @@ export default function AdminLayout() {
           </p>
         </div>
 
-        {/* Navegação Principal */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {hasRole("ADMIN") && (
-            <NavLink to="/admin" end className={linkClass}>
+          {canDelegated("canViewAdminDashboard") && (
+            <Link
+              href="/admin"
+              className={navClass(pathname === "/admin")}
+            >
               <LayoutDashboard size={18} /> Dashboard
-            </NavLink>
+            </Link>
           )}
 
-          <NavLink to="/admin/recepcao" className={linkClass}>
+          <Link
+            href="/admin/recepcao"
+            className={navClass(pathname === "/admin/recepcao")}
+          >
             <ClipboardList size={18} /> Fila do dia
-          </NavLink>
+          </Link>
 
-          <NavLink to="/admin/agendamentos" className={linkClass}>
+          <Link
+            href="/admin/agendamentos"
+            className={navClass(pathname === "/admin/agendamentos")}
+          >
             <Calendar size={18} /> Agendamentos
-          </NavLink>
+          </Link>
 
-          {hasRole("ADMIN") && (
-            <>
-              <div className="pt-4 pb-2 px-3">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-tighter">
-                  Configurações
-                </p>
-              </div>
-              <NavLink to="/admin/profissionais" className={linkClass}>
-                <Users size={18} /> Profissionais
-              </NavLink>
-              <NavLink to="/admin/procedimentos" className={linkClass}>
-                <Scissors size={18} /> Procedimentos
-              </NavLink>
-            </>
+          {(hasRole("ADMIN") ||
+            canDelegated("canManageProfessionals") ||
+            canDelegated("canManageProcedures")) && (
+            <div className="pt-4 pb-2 px-3">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-tighter">
+                Configurações
+              </p>
+            </div>
+          )}
+          {canDelegated("canManageProfessionals") && (
+            <Link
+              href="/admin/profissionais"
+              className={navClass(pathname === "/admin/profissionais")}
+            >
+              <Users size={18} /> Profissionais
+            </Link>
+          )}
+          {canDelegated("canManageProcedures") && (
+            <Link
+              href="/admin/procedimentos"
+              className={navClass(pathname === "/admin/procedimentos")}
+            >
+              <Scissors size={18} /> Procedimentos
+            </Link>
           )}
         </nav>
 
-        {/* Rodapé da Sidebar - Usuário */}
         <div className="p-4 border-t border-border bg-muted/30">
           <div className="flex items-center gap-3 px-2 mb-4">
             <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold-dark border border-gold/20">
@@ -104,6 +129,7 @@ export default function AdminLayout() {
             </div>
 
             <button
+              type="button"
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors font-medium"
             >
@@ -113,12 +139,8 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Área de Conteúdo */}
       <main className="flex-1 overflow-auto relative bg-[#fafafa]">
-        {/* Background sutil para dar contraste com os cards brancos */}
-        <div className="p-6 lg:p-10 max-w-7xl mx-auto min-h-full">
-          <Outlet />
-        </div>
+        <div className="p-6 lg:p-10 max-w-7xl mx-auto min-h-full">{children}</div>
       </main>
     </div>
   );

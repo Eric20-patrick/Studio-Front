@@ -1,10 +1,10 @@
-/**
+﻿/**
  * API client com interceptor de JWT e refresh automático.
- * BASE_URL configurada via VITE_API_URL.
+ * Configure NEXT_PUBLIC_API_URL no `.env.local` (ex.: http://localhost:3333).
  */
 
 const BASE_URL = (
-  import.meta.env.VITE_API_URL || " http://localhost:3333"
+  process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:3333"
 ).replace(/\/$/, "");
 const API_PREFIX = "/api";
 

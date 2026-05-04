@@ -1,4 +1,4 @@
-import { Professional, ProfessionalAvailability, AvailabilitySlot, WorkingHourBlock } from '@/types';
+﻿import { Professional, ProfessionalAvailability, AvailabilitySlot, WorkingHourBlock } from '@/types';
 import { api } from '@/services/api';
 
 export async function getProfessionals(params?: { specialty?: string }): Promise<Professional[]> {

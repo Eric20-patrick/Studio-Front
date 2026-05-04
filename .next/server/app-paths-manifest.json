@@ -1,0 +1,9 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(marketing)/contato/page": "app/(marketing)/contato/page.js",
+  "/(marketing)/equipe/page": "app/(marketing)/equipe/page.js",
+  "/(marketing)/page": "app/(marketing)/page.js",
+  "/admin/(protected)/page": "app/admin/(protected)/page.js",
+  "/admin/(protected)/recepcao/page": "app/admin/(protected)/recepcao/page.js",
+  "/admin/(protected)/agendamentos/page": "app/admin/(protected)/agendamentos/page.js"
+}

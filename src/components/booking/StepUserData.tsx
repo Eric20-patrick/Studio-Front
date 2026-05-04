@@ -1,12 +1,18 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import { createBooking } from "@/services/bookingService";
 import { formatPhone, formatDate, formatTimeFromIso } from "@/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, XCircle } from "lucide-react";
+import {
+  getFieldErrorsFromUnknown,
+  collapseFieldErrors,
+  showValidationToast,
+} from "@/utils/apiErrors";
 
 export default function StepUserData() {
   const { state, dispatch } = useBooking();
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const phoneDigits = state.form.phone.replace(/\D/g, "");
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.form.email.trim());
@@ -19,6 +25,7 @@ export default function StepUserData() {
 
   const handleSubmit = async () => {
     setError("");
+    setFieldErrors({});
     if (!canSubmit) return;
     if (!navigator.onLine) {
       setError(
@@ -42,8 +49,20 @@ export default function StepUserData() {
         })),
       });
       dispatch({ type: "SET_SUCCESS" });
-    } catch (e: any) {
-      setError(e?.message || "Erro ao enviar agendamento. Tente novamente.");
+    } catch (e: unknown) {
+      const details = getFieldErrorsFromUnknown(e);
+      if (details && Object.keys(details).length > 0) {
+        setFieldErrors(collapseFieldErrors(details));
+        showValidationToast("Não foi possível concluir o agendamento", details);
+        setError("");
+      } else {
+        setFieldErrors({});
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Erro ao enviar agendamento. Tente novamente.",
+        );
+      }
       dispatch({ type: "SET_SUBMITTING", payload: false });
     }
   };
@@ -58,12 +77,28 @@ export default function StepUserData() {
             className="border-b border-border/50 last:border-0 pb-2 last:pb-0"
           >
             <p className="font-medium">{it.procedure.name}</p>
-            <p className="text-xs text-muted-foreground">
-              📅 {formatDate(it.date)}
-              {it.startTime && ` • ⏰ ${formatTimeFromIso(it.startTime)}`}
+            <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+              <span>📅 {formatDate(it.date)}</span>
+              {it.startTime ? (
+                <span>• ⏰ {formatTimeFromIso(it.startTime)}</span>
+              ) : (
+                <span className="inline-flex items-center gap-0.5 text-destructive font-medium">
+                  <XCircle size={12} aria-hidden />
+                  Horário não escolhido
+                </span>
+              )}
             </p>
-            <p className="text-xs text-muted-foreground">
-              💇 {it.noPreference ? "Sem preferência" : it.professionalName}
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              {it.noPreference ? (
+                <span>💇 Sem preferência</span>
+              ) : it.professionalName ? (
+                <span>💇 {it.professionalName}</span>
+              ) : (
+                <span className="inline-flex items-center gap-0.5 text-destructive font-medium">
+                  <XCircle size={12} aria-hidden />
+                  Profissional não definido
+                </span>
+              )}
             </p>
           </div>
         ))}
@@ -71,42 +106,78 @@ export default function StepUserData() {
 
       <div className="flex flex-col gap-4">
         <div>
-          <label className="text-sm font-medium mb-1 block">Nome *</label>
+          <label className="text-sm font-medium mb-1 flex items-center gap-1">
+            Nome *
+            {!state.form.name.trim() && (
+              <XCircle className="text-destructive" size={14} aria-label="Obrigatório" />
+            )}
+          </label>
           <input
             type="text"
             value={state.form.name}
-            onChange={(e) =>
-              dispatch({ type: "SET_NAME", payload: e.target.value })
-            }
+            onChange={(e) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.clientName;
+                return n;
+              });
+              dispatch({ type: "SET_NAME", payload: e.target.value });
+            }}
             className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 ring-gold"
             placeholder="Seu nome completo"
             maxLength={100}
           />
+          {fieldErrors.clientName && (
+            <p className="text-xs text-destructive mt-1">{fieldErrors.clientName}</p>
+          )}
         </div>
         <div>
-          <label className="text-sm font-medium mb-1 block">Telefone *</label>
+          <label className="text-sm font-medium mb-1 flex items-center gap-1">
+            Telefone *
+            {phoneDigits.length < 10 && (
+              <XCircle className="text-destructive" size={14} aria-label="Inválido" />
+            )}
+          </label>
           <input
             type="tel"
             value={state.form.phone}
-            onChange={(e) =>
+            onChange={(e) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.clientPhone;
+                return n;
+              });
               dispatch({
                 type: "SET_PHONE",
                 payload: formatPhone(e.target.value),
-              })
-            }
+              });
+            }}
             className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 ring-gold"
             placeholder="(11) 99999-9999"
             maxLength={15}
           />
+          {fieldErrors.clientPhone && (
+            <p className="text-xs text-destructive mt-1">{fieldErrors.clientPhone}</p>
+          )}
         </div>
         <div>
-          <label className="text-sm font-medium mb-1 block">E-mail *</label>
+          <label className="text-sm font-medium mb-1 flex items-center gap-1">
+            E-mail *
+            {!emailValid && (
+              <XCircle className="text-destructive" size={14} aria-label="Inválido" />
+            )}
+          </label>
           <input
             type="email"
             value={state.form.email}
-            onChange={(e) =>
-              dispatch({ type: "SET_EMAIL", payload: e.target.value })
-            }
+            onChange={(e) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.clientEmail;
+                return n;
+              });
+              dispatch({ type: "SET_EMAIL", payload: e.target.value });
+            }}
             className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 ring-gold"
             placeholder="seu@email.com"
             maxLength={150}
@@ -114,21 +185,38 @@ export default function StepUserData() {
           <p className="text-xs text-muted-foreground mt-1">
             Usado para enviar a confirmação do agendamento.
           </p>
+          {fieldErrors.clientEmail && (
+            <p className="text-xs text-destructive mt-1">{fieldErrors.clientEmail}</p>
+          )}
         </div>
         <div>
           <label className="text-sm font-medium mb-1 block">Observações</label>
           <textarea
             value={state.form.observations}
-            onChange={(e) =>
-              dispatch({ type: "SET_OBSERVATIONS", payload: e.target.value })
-            }
+            onChange={(e) => {
+              setFieldErrors((p) => {
+                const n = { ...p };
+                delete n.observations;
+                return n;
+              });
+              dispatch({ type: "SET_OBSERVATIONS", payload: e.target.value });
+            }}
             className="w-full px-4 py-2.5 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 ring-gold resize-none"
             rows={3}
             placeholder="Alguma observação especial?"
             maxLength={500}
           />
+          {fieldErrors.observations && (
+            <p className="text-xs text-destructive mt-1">{fieldErrors.observations}</p>
+          )}
         </div>
       </div>
+
+      {fieldErrors.items && (
+        <p className="text-sm text-destructive text-center bg-destructive/10 rounded-lg px-3 py-2">
+          {fieldErrors.items}
+        </p>
+      )}
 
       <p className="text-xs text-muted-foreground text-center">
         Cancelamentos devem ser feitos com até 2h de antecedência via WhatsApp.
