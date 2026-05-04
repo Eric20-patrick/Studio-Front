@@ -1,11 +1,12 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   listBookings,
   confirmBooking,
   cancelBooking,
   completeBooking,
 } from '@/services/bookingService';
-import { Booking, BookingStatus } from '@/types';
+import { Booking, BookingStatus, Professional } from '@/types';
+import { getProfessionals } from '@/services/professionalService';
 import { Loader2, Check, X, CheckCheck, MessageCircle, RefreshCw } from 'lucide-react';
 import { formatTimeFromIso, formatCurrency } from '@/utils';
 import {
@@ -27,7 +28,13 @@ export default function AdminBookings() {
   const [meta, setMeta] = useState({ totalPages: 1 });
   const [status, setStatus] = useState<BookingStatus | 'ALL'>('ALL');
   const [filterDate, setFilterDate] = useState('');
+  const [filterProfessionalId, setFilterProfessionalId] = useState('');
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    getProfessionals().then(setProfessionals).catch(() => {});
+  }, []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
@@ -46,6 +53,7 @@ export default function AdminBookings() {
     const params: Record<string, unknown> = { page, limit: 20 };
     if (status !== 'ALL') params.status = status;
     if (filterDate) params.date = filterDate;
+    if (filterProfessionalId) params.professionalId = filterProfessionalId;
 
     listBookings(params)
       .then((res: any) => {
@@ -63,7 +71,7 @@ export default function AdminBookings() {
         setError(e?.message || 'Erro ao carregar agendamentos');
       })
       .finally(() => setLoading(false));
-  }, [status, page, filterDate]);
+  }, [status, page, filterDate, filterProfessionalId]);
 
   useEffect(() => {
     refresh();
@@ -109,8 +117,28 @@ export default function AdminBookings() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <label htmlFor="admin-booking-date" className="text-muted-foreground whitespace-nowrap">
+        <div className="flex items-center gap-2 text-sm flex-wrap">
+          <label htmlFor="admin-booking-prof" className="text-muted-foreground whitespace-nowrap">
+            Profissional
+          </label>
+          <select
+            id="admin-booking-prof"
+            value={filterProfessionalId}
+            onChange={(e) => {
+              setFilterProfessionalId(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 rounded-lg border border-input bg-background text-sm max-w-[200px]"
+          >
+            <option value="">Todos</option>
+            {professionals.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          <label htmlFor="admin-booking-date" className="text-muted-foreground whitespace-nowrap ml-2">
             Dia do atendimento
           </label>
           <input
@@ -132,7 +160,19 @@ export default function AdminBookings() {
               }}
               className="text-xs text-gold-dark hover:underline"
             >
-              Limpar
+              Limpar Data
+            </button>
+          )}
+          {filterProfessionalId && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilterProfessionalId('');
+                setPage(1);
+              }}
+              className="text-xs text-gold-dark hover:underline"
+            >
+              Limpar Profissional
             </button>
           )}
         </div>

@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/(marketing)/contato/page": [
+    "/(marketing)/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/contato/page.js"
+      "static/chunks/app/(marketing)/page.js"
     ],
     "/(marketing)/layout": [
       "static/chunks/webpack.js",
@@ -21,10 +21,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/_not-found/page": [
+    "/(marketing)/servicos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(marketing)/servicos/page.js"
+    ],
+    "/(marketing)/quem-somos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/quem-somos/page.js"
+    ],
+    "/(marketing)/equipe/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/equipe/page.js"
+    ],
+    "/(marketing)/galeria/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/galeria/page.js"
     ],
     "/admin/login/page": [
       "static/chunks/webpack.js",
@@ -46,6 +61,16 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/(protected)/layout.js"
     ],
+    "/admin/(protected)/procedimentos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/(protected)/procedimentos/page.js"
+    ],
+    "/admin/(protected)/profissionais/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/(protected)/profissionais/page.js"
+    ],
     "/admin/(protected)/recepcao/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -56,15 +81,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/(protected)/agendamentos/page.js"
     ],
-    "/(marketing)/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/page.js"
+      "static/chunks/app/_not-found/page.js"
     ],
-    "/(marketing)/equipe/page": [
+    "/(marketing)/blog/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/equipe/page.js"
+      "static/chunks/app/(marketing)/blog/page.js"
+    ],
+    "/(marketing)/contato/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/contato/page.js"
     ]
   }
 }

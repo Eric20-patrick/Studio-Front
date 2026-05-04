@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getAdminDashboard } from '@/services/dashboardService';
 import { downloadCompletedReport } from '@/services/reportExportService';
 import { useAuth } from '@/hooks/useAuth';
@@ -281,6 +281,26 @@ export default function AdminDashboard() {
             >
               <FileText size={16} />
               {expBusy === 'pdf' ? 'Gerando…' : 'Baixar PDF'}
+            </button>
+            <button
+              type="button"
+              disabled={!!expBusy}
+              onClick={() => {
+                const lastMonthDate = new Date();
+                lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+                const pYear = lastMonthDate.getFullYear();
+                const pMonth = lastMonthDate.getMonth() + 1;
+                
+                setExpBusy('pdf');
+                downloadCompletedReport({ format: 'pdf', year: pYear, month: pMonth })
+                  .catch((e) => showApiErrorToast(e, 'Não foi possível exportar o relatório'))
+                  .finally(() => setExpBusy(null));
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gold text-gold-dark bg-gold/10 text-sm font-medium hover:bg-gold/20 disabled:opacity-50 ml-auto"
+              title="A dashboard zera os contadores no dia 01. Use este botão para baixar o resumo do mês que passou."
+            >
+              <FileText size={16} />
+              Baixar Mês Passado
             </button>
             {repDay && (
               <button

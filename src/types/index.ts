@@ -1,4 +1,4 @@
-﻿export type Period = "manha" | "tarde";
+export type Period = "manha" | "tarde";
 
 export type WeekDay =
   | "MONDAY"
@@ -24,6 +24,8 @@ export interface WorkingHourBlock {
   weekDay: WeekDay;
   startTime: string; // "HH:MM"
   endTime: string;
+  lunchStart?: string; // "HH:MM"
+  lunchEnd?: string;
 }
 
 // ─── Professional ─────────────────────────────────────────

@@ -1,6 +1,8 @@
-﻿import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getReceptionDashboard, ReceptionDashboardData } from '@/services/dashboardService';
 import { confirmBooking, cancelBooking, completeBooking } from '@/services/bookingService';
+import { getProfessionals } from '@/services/professionalService';
+import { Professional } from '@/types';
 import { Loader2, MessageCircle, Check, X, CheckCheck, RefreshCw } from 'lucide-react';
 import { formatTimeFromIso } from '@/utils';
 import {
@@ -22,6 +24,11 @@ export default function ReceptionDashboard() {
   const [catalog, setCatalog] = useState<ReceptionDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+
+  useEffect(() => {
+    getProfessionals().then(setProfessionals).catch(() => {});
+  }, []);
 
   const [date, setDate] = useState(() => localCalendarToday());
   const [professionalId, setProfessionalId] = useState('');
@@ -67,17 +74,7 @@ export default function ReceptionDashboard() {
     setCatalog(null);
   }, [date]);
 
-  const profOptions = useMemo(() => {
-    const src = catalog ?? data;
-    if (!src) return [];
-    const m = new Map<string, string>();
-    src.bookings.forEach((b) => {
-      b.items.forEach((it) => {
-        m.set(it.professional.id, it.professional.name);
-      });
-    });
-    return [...m.entries()].map(([id, name]) => ({ id, name }));
-  }, [catalog, data]);
+
 
   const procOptions = useMemo(() => {
     const src = catalog ?? data;
@@ -160,7 +157,7 @@ export default function ReceptionDashboard() {
             className="px-3 py-2 rounded-lg border border-input bg-background text-sm max-w-[200px]"
           >
             <option value="">Todos os profissionais</option>
-            {profOptions.map((p) => (
+            {professionals.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>

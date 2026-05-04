@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import {
   Period,
@@ -130,10 +130,18 @@ export default function StepDateTime() {
   };
 
   const filterSlotsByPeriod = (slots: AvailabilitySlot[]) => {
-    if (!selectedPeriod) return slots;
-    return slots.filter(
-      (s) => getPeriodFromTime(s.startTime) === selectedPeriod,
-    );
+    let filtered = slots;
+    if (selectedPeriod) {
+      filtered = filtered.filter(
+        (s) => getPeriodFromTime(s.startTime) === selectedPeriod,
+      );
+    }
+    
+    // Filtro rigoroso no frontend para esconder horários do passado
+    const now = new Date();
+    filtered = filtered.filter((s) => new Date(s.startTime).getTime() > now.getTime());
+    
+    return filtered;
   };
 
   return (
@@ -170,23 +178,33 @@ export default function StepDateTime() {
           Período:
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {PERIODS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => handlePeriod(p.id)}
-              className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-                selectedPeriod === p.id
-                  ? "border-gold bg-gold/10"
-                  : "border-border hover:border-gold/30 bg-card"
-              }`}
-            >
-              <span className="text-2xl mb-1">{p.icon}</span>
-              <span className="font-bold text-sm">{p.label}</span>
-              <span className="text-[10px] text-muted-foreground uppercase">
-                {p.hours}
-              </span>
-            </button>
-          ))}
+          {PERIODS.map((p) => {
+            const isToday =
+              selectedDate?.toDateString() === new Date().toDateString();
+            const currentHour = new Date().getHours();
+            const isDisabled = isToday && p.id === "manha" && currentHour >= 12;
+
+            return (
+              <button
+                key={p.id}
+                disabled={isDisabled}
+                onClick={() => handlePeriod(p.id)}
+                className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
+                  isDisabled
+                    ? "border-border bg-muted/50 opacity-50 cursor-not-allowed"
+                    : selectedPeriod === p.id
+                      ? "border-gold bg-gold/10"
+                      : "border-border hover:border-gold/30 bg-card"
+                }`}
+              >
+                <span className="text-2xl mb-1">{p.icon}</span>
+                <span className="font-bold text-sm">{p.label}</span>
+                <span className="text-[10px] text-muted-foreground uppercase">
+                  {isDisabled ? "Indisponível" : p.hours}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

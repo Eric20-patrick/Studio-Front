@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -11,7 +11,8 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-border/10">
+    <>
+      <nav className="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-white/10">
       <div className="container-salon flex items-center justify-between h-16 px-4">
         <Link href="/" className="flex-shrink-0">
           <img
@@ -29,7 +30,7 @@ export default function Navbar() {
               className={`text-sm font-medium tracking-wide transition-colors gold-underline ${
                 pathname === link.path
                   ? "text-gold gold-underline-active"
-                  : "text-primary-foreground/80 hover:text-gold"
+                  : "text-white/80 hover:text-gold"
               }`}
             >
               {link.label}
@@ -38,7 +39,7 @@ export default function Navbar() {
         </div>
 
         <button
-          className="md:hidden text-primary-foreground p-2"
+          className="md:hidden text-white p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Menu"
         >
@@ -55,17 +56,40 @@ export default function Navbar() {
         </button>
       </div>
 
+      </nav>
+
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 md:hidden"
+          className="fixed inset-0 z-[60] md:hidden"
           onClick={() => setMobileOpen(false)}
         >
-          <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="absolute right-0 top-0 h-full w-72 bg-primary shadow-2xl animate-slide-in-right"
+            className="absolute right-0 top-0 h-full w-72 bg-black shadow-2xl animate-slide-in-right flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex flex-col pt-20 px-6 gap-2">
+            {/* Header do Menu */}
+            <div className="flex items-center justify-between px-6 h-16 border-b border-white/10 shrink-0">
+              {/* Espaçador para centralizar a logo */}
+              <div className="flex-1" />
+              <img
+                src={SALON_INFO.logo}
+                alt="Studio Neo"
+                className="h-8 object-contain brightness-0 invert"
+              />
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="text-white p-2 -mr-2 hover:bg-white/10 rounded-full transition-colors"
+                  aria-label="Fechar menu"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Links do Menu */}
+            <div className="flex flex-col py-6 px-6 gap-2 overflow-y-auto">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.path}
@@ -74,7 +98,7 @@ export default function Navbar() {
                   className={`py-3 px-4 text-sm font-medium rounded-lg transition-colors ${
                     pathname === link.path
                       ? "text-gold bg-gold/10"
-                      : "text-primary-foreground/70 hover:text-gold hover:bg-gold/5"
+                      : "text-white/70 hover:text-gold hover:bg-gold/5"
                   }`}
                 >
                   {link.label}
@@ -84,6 +108,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
 }

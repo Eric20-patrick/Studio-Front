@@ -60,7 +60,7 @@ export default function GalleryPage() {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-primary/70" />
-        <h1 className="relative text-4xl md:text-5xl font-display font-bold text-primary-foreground justify-center ">
+        <h1 className="relative text-4xl md:text-5xl font-display font-bold text-primary-foreground justify-center  ">
           Galeria de Fotos
         </h1>
       </section>

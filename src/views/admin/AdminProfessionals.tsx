@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Professional, WorkingHourBlock, WeekDay } from '@/types';
 import {
   getProfessionals,
@@ -430,56 +430,78 @@ export default function AdminProfessionals() {
                 {editing.workingHours.map((b, i) => (
                   <div
                     key={i}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-muted/30 p-3 rounded-xl border border-border/50"
+                    className="flex flex-col gap-2 bg-muted/30 p-3 rounded-xl border border-border/50"
                   >
-                    {/* Campo do Dia da Semana - Ajustado para mostrar o texto */}
-                    <div className="flex-1 w-full">
-                      <select
-                        className="w-full bg-background border border-input rounded-md px-2 py-1.5 text-sm font-medium focus:ring-1 focus:ring-gold outline-none appearance-none cursor-pointer"
-                        style={{
-                          backgroundImage:
-                            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E\")",
-                          backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'right 0.5rem center',
-                          backgroundSize: '1.2em',
-                          paddingRight: '2rem',
-                        }}
-                        value={b.weekDay}
-                        onChange={(e) =>
-                          updateEditingBlock(i, {
-                            weekDay: e.target.value as WeekDay,
-                          })
-                        }
-                      >
-                        {WEEKDAYS.map((d) => (
-                          <option key={d.id} value={d.id} className="text-black">
-                            {d.label}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full">
+                      {/* Campo do Dia da Semana */}
+                      <div className="flex-1 w-full sm:w-auto">
+                        <select
+                          className="w-full bg-background border border-input rounded-md px-2 py-1.5 text-sm font-medium focus:ring-1 focus:ring-gold outline-none appearance-none cursor-pointer"
+                          style={{
+                            backgroundImage:
+                              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E\")",
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 0.5rem center',
+                            backgroundSize: '1.2em',
+                            paddingRight: '2rem',
+                          }}
+                          value={b.weekDay}
+                          onChange={(e) =>
+                            updateEditingBlock(i, {
+                              weekDay: e.target.value as WeekDay,
+                            })
+                          }
+                        >
+                          {WEEKDAYS.map((d) => (
+                            <option key={d.id} value={d.id} className="text-black">
+                              {d.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <input
+                          type="time"
+                          className="inp !py-1 !text-xs !w-24 text-center"
+                          value={b.startTime}
+                          onChange={(e) => updateEditingBlock(i, { startTime: e.target.value })}
+                        />
+                        <span className="text-[10px] text-muted-foreground font-bold">ATÉ</span>
+                        <input
+                          type="time"
+                          className="inp !py-1 !text-xs !w-24 text-center"
+                          value={b.endTime}
+                          onChange={(e) => updateEditingBlock(i, { endTime: e.target.value })}
+                        />
+                        <button
+                          onClick={() => removeEditingBlock(i)}
+                          className="text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors ml-auto sm:ml-0"
+                          title="Remover dia"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {/* Almoço */}
+                    <div className="flex items-center gap-2 w-full bg-background/50 p-2 rounded-lg border border-border/30 justify-end">
+                      <span className="text-[10px] text-muted-foreground font-bold">ALMOÇO:</span>
                       <input
                         type="time"
                         className="inp !py-1 !text-xs !w-24 text-center"
-                        value={b.startTime}
-                        onChange={(e) => updateEditingBlock(i, { startTime: e.target.value })}
+                        value={b.lunchStart || ''}
+                        onChange={(e) => updateEditingBlock(i, { lunchStart: e.target.value })}
+                        placeholder="Início"
                       />
                       <span className="text-[10px] text-muted-foreground font-bold">ATÉ</span>
                       <input
                         type="time"
                         className="inp !py-1 !text-xs !w-24 text-center"
-                        value={b.endTime}
-                        onChange={(e) => updateEditingBlock(i, { endTime: e.target.value })}
+                        value={b.lunchEnd || ''}
+                        onChange={(e) => updateEditingBlock(i, { lunchEnd: e.target.value })}
+                        placeholder="Fim"
                       />
-                      <button
-                        onClick={() => removeEditingBlock(i)}
-                        className="text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remover dia"
-                      >
-                        <Trash2 size={16} />
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -512,44 +534,63 @@ export default function AdminProfessionals() {
               {hoursTarget.workingHours.map((b, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border/50 animate-in slide-in-from-top-1"
+                  className="flex flex-col gap-2 bg-muted/30 p-2 rounded-lg border border-border/50 animate-in slide-in-from-top-1"
                 >
-                  <select
-                    className="inp flex-1 !py-1"
-                    value={b.weekDay}
-                    onChange={(e) =>
-                      updateTargetBlock(i, {
-                        weekDay: e.target.value as WeekDay,
-                      })
-                    }
-                  >
-                    {WEEKDAYS.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="time"
-                    className="inp w-24 !py-1"
-                    value={b.startTime}
-                    onChange={(e) => updateTargetBlock(i, { startTime: e.target.value })}
-                  />
-                  <input
-                    type="time"
-                    className="inp w-24 !py-1"
-                    value={b.endTime}
-                    onChange={(e) => updateTargetBlock(i, { endTime: e.target.value })}
-                  />
-                  <button
-                    onClick={() => {
-                      const wh = hoursTarget.workingHours.filter((_, idx) => idx !== i);
-                      setHoursTarget({ ...hoursTarget, workingHours: wh });
-                    }}
-                    className="p-1.5 hover:bg-destructive/10 text-destructive rounded-md transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      className="inp flex-1 !py-1"
+                      value={b.weekDay}
+                      onChange={(e) =>
+                        updateTargetBlock(i, {
+                          weekDay: e.target.value as WeekDay,
+                        })
+                      }
+                    >
+                      {WEEKDAYS.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="time"
+                      className="inp w-24 !py-1 text-center"
+                      value={b.startTime}
+                      onChange={(e) => updateTargetBlock(i, { startTime: e.target.value })}
+                    />
+                    <input
+                      type="time"
+                      className="inp w-24 !py-1 text-center"
+                      value={b.endTime}
+                      onChange={(e) => updateTargetBlock(i, { endTime: e.target.value })}
+                    />
+                    <button
+                      onClick={() => {
+                        const wh = hoursTarget.workingHours.filter((_, idx) => idx !== i);
+                        setHoursTarget({ ...hoursTarget, workingHours: wh });
+                      }}
+                      className="p-1.5 hover:bg-destructive/10 text-destructive rounded-md transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                  {/* Almoço Quick Modal */}
+                  <div className="w-full flex items-center justify-end gap-2 bg-background/50 p-1.5 rounded-md border border-border/30">
+                    <span className="text-[10px] text-muted-foreground font-bold">ALMOÇO:</span>
+                    <input
+                      type="time"
+                      className="inp w-24 !py-1 !text-xs text-center"
+                      value={b.lunchStart || ''}
+                      onChange={(e) => updateTargetBlock(i, { lunchStart: e.target.value })}
+                    />
+                    <span className="text-[10px] text-muted-foreground font-bold">ATÉ</span>
+                    <input
+                      type="time"
+                      className="inp w-24 !py-1 !text-xs text-center"
+                      value={b.lunchEnd || ''}
+                      onChange={(e) => updateTargetBlock(i, { lunchEnd: e.target.value })}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
