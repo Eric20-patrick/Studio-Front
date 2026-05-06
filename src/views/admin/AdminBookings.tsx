@@ -414,11 +414,16 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: any) {
       <div className="flex items-center justify-between pt-2">
         <div className="flex flex-col">
           <span className="text-[9px] text-muted-foreground uppercase font-bold">
-            Total a receber
+            {b.status === 'COMPLETED' ? 'Total recebido' : 'Total a receber'}
           </span>
           <p className="font-bold text-lg text-gold-dark leading-tight">
             {b.totalAmountFormatted || formatCurrency(b.totalAmount)}
           </p>
+          {b.discountAmount ? (
+            <p className="text-[10px] text-green-600 font-medium mt-0.5">
+              Desconto: {b.discountPercentage}% (- {formatCurrency(b.discountAmount)})
+            </p>
+          ) : null}
         </div>
 
         <div className="flex gap-2">

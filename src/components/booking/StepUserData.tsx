@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import { createBooking } from "@/services/bookingService";
 import { formatPhone, formatDate, formatTimeFromIso } from "@/utils";
@@ -21,7 +21,8 @@ export default function StepUserData() {
     state.form.name.trim().length > 0 &&
     phoneDigits.length >= 10 &&
     emailValid &&
-    state.form.items.length > 0;
+    state.form.items.length > 0 &&
+    state.form.marketingConsent;
 
   const handleSubmit = async () => {
     setError("");
@@ -47,6 +48,7 @@ export default function StepUserData() {
           period: it.period,
           startTime: it.startTime,
         })),
+        marketingConsent: state.form.marketingConsent,
       });
       dispatch({ type: "SET_SUCCESS" });
     } catch (e: unknown) {
@@ -209,6 +211,19 @@ export default function StepUserData() {
           {fieldErrors.observations && (
             <p className="text-xs text-destructive mt-1">{fieldErrors.observations}</p>
           )}
+        </div>
+
+        <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg border border-border">
+          <input
+            type="checkbox"
+            id="marketingConsent"
+            checked={state.form.marketingConsent}
+            onChange={(e) => dispatch({ type: "SET_CONSENT", payload: e.target.checked })}
+            className="mt-1 h-4 w-4 rounded border-input bg-background text-gold focus:ring-gold"
+          />
+          <label htmlFor="marketingConsent" className="text-xs text-muted-foreground leading-tight">
+            * Concordo que o Studio Neo armazene meus dados para este agendamento e aceito receber comunicações e ofertas sobre os serviços por e-mail ou WhatsApp, conforme a LGPD.
+          </label>
         </div>
       </div>
 

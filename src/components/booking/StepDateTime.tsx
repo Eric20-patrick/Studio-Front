@@ -19,7 +19,7 @@ import { Loader2 } from "lucide-react";
 
 const PERIODS: { id: Period; label: string; icon: string; hours: string }[] = [
   { id: "manha", label: "Manhã", icon: "🌅", hours: "08:00 — 11:59" },
-  { id: "tarde", label: "Tarde", icon: "🌇", hours: "12:00 — 20:00" },
+  { id: "tarde", label: "Tarde", icon: "🌇", hours: "12:00 — 23:59" },
 ];
 
 // Ajuste na interface para aceitar arrays de leitura
@@ -91,6 +91,19 @@ export default function StepDateTime() {
   useEffect(() => {
     if (!selectedDate || !selectedPeriod) return;
 
+    // Verificar se TODOS os procedimentos têm pelo menos um profissional disponível
+    const hasAvailability = state.form.procedures.every((proc) => {
+      const profs = slotsByProc[proc.id] || [];
+      return profs.some(
+        (p) => filterSlotsByPeriod(p.slots).length > 0,
+      );
+    });
+
+    if (!hasAvailability) {
+      dispatch({ type: "SET_ITEMS", payload: [] });
+      return;
+    }
+
     const items: BookingItemSelection[] = state.form.procedures.map((proc) => {
       const sel = selections[proc.id];
       return {
@@ -111,6 +124,7 @@ export default function StepDateTime() {
     selectedDate,
     selectedPeriod,
     state.form.procedures,
+    slotsByProc,
     dispatch,
   ]);
 
@@ -187,6 +201,7 @@ export default function StepDateTime() {
             return (
               <button
                 key={p.id}
+                data-testid={`period-button-${p.id}`}
                 disabled={isDisabled}
                 onClick={() => handlePeriod(p.id)}
                 className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
@@ -223,75 +238,93 @@ export default function StepDateTime() {
             </div>
           ) : (
             <div className="space-y-4">
-              {state.form.procedures.map((proc) => {
-                const profs = slotsByProc[proc.id] || [];
-                const sel = selections[proc.id];
-                const availableProfs = profs.filter(
-                  (p) => filterSlotsByPeriod(p.slots).length > 0,
-                );
+              {(() => {
+                const hasAnyAvailability = state.form.procedures.every((proc) => {
+                  const profs = slotsByProc[proc.id] || [];
+                  return profs.some((p) => filterSlotsByPeriod(p.slots).length > 0);
+                });
 
-                return (
-                  <div
-                    key={proc.id}
-                    className="bg-muted/30 border border-border rounded-2xl p-4"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-sm text-foreground">
-                        {proc.name}
-                      </h4>
+                if (!hasAnyAvailability) {
+                  return (
+                    <div className="py-6 text-center border border-destructive border-dashed rounded-lg bg-destructive/5">
+                      <p className="text-sm font-medium text-destructive">
+                        Não há profissionais disponíveis para a data selecionada. Escolha outra data ou período.
+                      </p>
                     </div>
+                  );
+                }
 
-                    {availableProfs.length === 0 ? (
-                      <div className="py-4 text-center border border-dashed border-border rounded-lg bg-background/50">
-                        <p className="text-xs text-muted-foreground">
-                          Sem horários para este período.
-                        </p>
+                return state.form.procedures.map((proc) => {
+                  const profs = slotsByProc[proc.id] || [];
+                  const sel = selections[proc.id];
+                  const availableProfs = profs.filter(
+                    (p) => filterSlotsByPeriod(p.slots).length > 0,
+                  );
+
+                  return (
+                    <div
+                      key={proc.id}
+                      className="bg-muted/30 border border-border rounded-2xl p-4"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-sm text-foreground">
+                          {proc.name}
+                        </h4>
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {availableProfs.map((pa) => (
-                          <div key={pa.professional.id}>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
-                              {pa.professional.name}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {filterSlotsByPeriod(pa.slots).map((s) => {
-                                const isSel =
-                                  sel?.startTime === s.startTime &&
-                                  sel?.professionalId === pa.professional.id;
-                                return (
-                                  <button
-                                    key={`${pa.professional.id}-${s.startTime}`}
-                                    onClick={() =>
-                                      setSelections((prev) => ({
-                                        ...prev,
-                                        [proc.id]: {
-                                          professionalId: pa.professional.id,
-                                          professionalName:
-                                            pa.professional.name,
-                                          startTime: s.startTime,
-                                          endTime: s.endTime,
-                                        },
-                                      }))
-                                    }
-                                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
-                                      isSel
-                                        ? "bg-gold text-primary border-gold shadow-md"
-                                        : "bg-background border-border hover:border-gold/50"
-                                    }`}
-                                  >
-                                    {formatTimeFromIso(s.startTime)}
-                                  </button>
-                                );
-                              })}
+
+                      {availableProfs.length === 0 ? (
+                        <div className="py-4 text-center border border-dashed border-border rounded-lg bg-background/50">
+                          <p className="text-xs text-muted-foreground">
+                            Sem horários para este período.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {availableProfs.map((pa) => (
+                            <div key={pa.professional.id}>
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
+                                {pa.professional.name}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {filterSlotsByPeriod(pa.slots).map((s) => {
+                                  const isSel =
+                                    sel?.startTime === s.startTime &&
+                                    sel?.professionalId === pa.professional.id;
+                                  return (
+                                    <button
+                                      key={`${pa.professional.id}-${s.startTime}`}
+                                      data-testid="time-slot"
+                                      onClick={() =>
+                                        setSelections((prev) => ({
+                                          ...prev,
+                                          [proc.id]: {
+                                            professionalId: pa.professional.id,
+                                            professionalName:
+                                              pa.professional.name,
+                                            startTime: s.startTime,
+                                            endTime: s.endTime,
+                                          },
+                                        }))
+                                      }
+                                      className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
+                                        isSel
+                                          ? "bg-gold text-primary border-gold shadow-md"
+                                          : "bg-background border-border hover:border-gold/50"
+                                      }`}
+                                    >
+                                      {formatTimeFromIso(s.startTime)}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </section>

@@ -1,4 +1,4 @@
-﻿import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
 import { api, getAccessToken, setAccessToken } from '@/services/api';
 import { AuthUser, DelegatedPermissions, UserRole } from '@/types';
 
@@ -28,9 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         if (!getAccessToken()) {
-          // try refresh via cookie
-          const t = await api.refresh();
-          if (!t) { if (!cancelled) setLoading(false); return; }
+          if (!cancelled) setLoading(false);
+          return;
         }
         const me = await api.get<AuthUser>('/auth/me');
         if (!cancelled) setUser(me);

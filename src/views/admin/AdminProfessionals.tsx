@@ -8,6 +8,7 @@ import {
   deactivateProfessional,
   reactivateProfessional,
 } from '@/services/professionalService';
+import { getAdminProcedures } from '@/services/procedureService';
 import {
   Loader2,
   Plus,
@@ -44,6 +45,7 @@ interface FormState {
   phone: string;
   specialties: string;
   avatarUrl: string;
+  description: string;
   workingHours: WorkingHourBlock[];
 }
 
@@ -53,12 +55,14 @@ const empty: FormState = {
   phone: '',
   specialties: '',
   avatarUrl: '',
+  description: '',
   // Agora já inicia com um bloco para facilitar a criação
   workingHours: [{ weekDay: 'MONDAY', startTime: '09:00', endTime: '18:00' }],
 };
 
 export default function AdminProfessionals() {
   const [items, setItems] = useState<Professional[]>([]);
+  const [proceduresList, setProceduresList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<FormState | null>(null);
@@ -78,8 +82,11 @@ export default function AdminProfessionals() {
   const refresh = () => {
     setLoading(true);
     setError('');
-    getProfessionals()
-      .then(setItems)
+    Promise.all([getProfessionals(), getAdminProcedures()])
+      .then(([profs, procs]) => {
+        setItems(profs);
+        setProceduresList(procs);
+      })
       .catch((e) => setError(e?.message || 'Erro ao carregar profissionais'))
       .finally(() => setLoading(false));
   };
@@ -138,6 +145,7 @@ export default function AdminProfessionals() {
         email: editing.email.trim() || undefined,
         phone: phoneDigits.length ? phoneDigits : undefined,
         avatarUrl: editing.avatarUrl.trim() || undefined,
+        description: editing.description.trim() || undefined,
         specialties: editing.specialties
           .split(',')
           .map((s) => s.trim())
@@ -265,6 +273,7 @@ export default function AdminProfessionals() {
                       email: p.email || '',
                       phone: p.phone || '',
                       specialties: (p.specialties || []).join(', '),
+                      description: p.description || '',
                       avatarUrl: p.avatarUrl || '',
                       workingHours: p.workingHours || [],
                     });
@@ -384,19 +393,55 @@ export default function AdminProfessionals() {
               </Field>
             </div>
 
-            <Field label="Especialidades (separadas por vírgula)" error={fieldErrors.specialties}>
-              <input
-                className="inp"
-                value={editing.specialties}
+            <Field label="Especialidades (Obrigatório)" error={fieldErrors.specialties}>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {Array.from(new Set(proceduresList.map(p => p.category))).map(cat => {
+                  const selected = editing.specialties.split(',').map(s => s.trim()).includes(cat);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        const current = editing.specialties.split(',').map(s => s.trim()).filter(Boolean);
+                        let next;
+                        if (current.includes(cat)) {
+                          next = current.filter(c => c !== cat);
+                        } else {
+                          next = [...current, cat];
+                        }
+                        setFieldErrors(p => { const n = {...p}; delete n.specialties; return n; });
+                        setEditing({ ...editing, specialties: next.join(', ') });
+                      }}
+                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                        selected 
+                          ? 'bg-gold text-primary border-gold font-bold shadow-sm' 
+                          : 'bg-background text-muted-foreground border-border hover:border-gold/50'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+              {proceduresList.length === 0 && (
+                <p className="text-xs text-muted-foreground italic">Nenhum procedimento cadastrado ainda.</p>
+              )}
+            </Field>
+
+            <Field label="Descrição (Aparecerá na página Equipe)" error={fieldErrors.description}>
+              <textarea
+                className="inp custom-scroll resize-none"
+                rows={3}
+                value={editing.description}
                 onChange={(e) => {
                   setFieldErrors((p) => {
                     const n = { ...p };
-                    delete n.specialties;
+                    delete n.description;
                     return n;
                   });
-                  setEditing({ ...editing, specialties: e.target.value });
+                  setEditing({ ...editing, description: e.target.value });
                 }}
-                placeholder="Cabelo, Barba, Coloração"
+                placeholder="Breve resumo sobre a carreira e perfil do profissional..."
               />
             </Field>
 
@@ -645,13 +690,13 @@ function Field({
   error?: string;
 }) {
   return (
-    <label className="block">
-      <span className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 ml-1">
+    <div className="block">
+      <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1 ml-1">
         {label}
-      </span>
+      </label>
       {children}
       {error ? <p className="text-xs text-destructive mt-1 ml-1">{error}</p> : null}
-    </label>
+    </div>
   );
 }
 

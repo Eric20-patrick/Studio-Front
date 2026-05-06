@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useBooking } from '@/hooks/useBooking';
 import { Procedure } from '@/types';
 import { getProcedures } from '@/services/procedureService';
@@ -30,6 +30,12 @@ export default function StepProcedures() {
     const next = isSelected(p)
       ? state.form.procedures.filter((s) => s.id !== p.id)
       : [...state.form.procedures, p];
+    
+    if (next.length > 5) {
+      alert('Você pode selecionar no máximo 5 procedimentos.');
+      return;
+    }
+
     dispatch({ type: 'SET_PROCEDURES', payload: next });
   };
 
@@ -70,6 +76,7 @@ export default function StepProcedures() {
           {filtered.map((p) => (
             <button
               key={p.id}
+              data-testid="procedure-chip"
               onClick={() => toggle(p)}
               className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                 isSelected(p) ? 'bg-gold text-primary border-gold' : 'border-border hover:border-gold/50 hover:bg-gold/5'

@@ -1,4 +1,4 @@
-﻿import { api } from '@/services/api';
+import { api } from '@/services/api';
 
 export interface AdminDashboardData {
   summary: {
@@ -53,6 +53,8 @@ export interface ReceptionDashboardData {
     }>;
     totalAmount: number;
     totalAmountFormatted: string;
+    discountPercentage?: number | null;
+    discountAmount?: number | null;
   }>;
 }
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -78,6 +78,15 @@ export default function AdminLayout({
           >
             <Calendar size={18} /> Agendamentos
           </Link>
+
+          {hasRole("ADMIN") && (
+            <Link
+              href="/admin/clientes"
+              className={navClass(pathname === "/admin/clientes")}
+            >
+              <Users size={18} /> Clientes
+            </Link>
+          )}
 
           {(hasRole("ADMIN") ||
             canDelegated("canManageProfessionals") ||

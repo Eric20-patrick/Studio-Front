@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Procedure } from '@/types';
 import {
   getAdminProcedures,
@@ -7,8 +7,9 @@ import {
   updateProcedurePrice,
   deactivateProcedure,
   reactivateProcedure,
+  deleteProcedure,
 } from '@/services/procedureService';
-import { Loader2, Plus, Pencil, Power, DollarSign } from 'lucide-react';
+import { Loader2, Plus, Pencil, Power, DollarSign, Trash2 } from 'lucide-react';
 import { formatDuration, formatCurrency } from '@/utils';
 import {
   getFieldErrorsFromUnknown,
@@ -107,6 +108,16 @@ export default function AdminProcedures() {
     }
   };
 
+  const deleteProc = async (p: Procedure) => {
+    if (!window.confirm(`Tem certeza que deseja EXCLUIR DEFINITIVAMENTE o procedimento "${p.name}"?`)) return;
+    try {
+      await deleteProcedure(p.id);
+      refresh();
+    } catch (e: unknown) {
+      showApiErrorToast(e, 'Não foi possível excluir o procedimento. Talvez ele tenha agendamentos atrelados. Tente apenas inativá-lo.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -186,9 +197,17 @@ export default function AdminProcedures() {
                     </button>
                     <button
                       onClick={() => toggleActive(p)}
+                      title={p.isActive === false ? 'Reativar' : 'Inativar'}
                       className="p-1.5 hover:bg-muted rounded"
                     >
-                      <Power size={14} />
+                      <Power size={14} className={p.isActive === false ? "text-emerald-600" : "text-amber-600"} />
+                    </button>
+                    <button
+                      onClick={() => deleteProc(p)}
+                      title="Excluir procedimento"
+                      className="p-1.5 hover:bg-destructive/10 rounded text-destructive"
+                    >
+                      <Trash2 size={14} />
                     </button>
                   </td>
                 </tr>

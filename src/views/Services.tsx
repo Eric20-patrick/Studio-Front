@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Procedure } from "@/types";
@@ -29,6 +29,57 @@ export default function ServicesPage() {
     getProcedures().then(setProcedures);
   }, []);
 
+  const ProcedureCard = ({ proc, onBook }: { proc: Procedure; onBook: () => void }) => {
+    const [expanded, setExpanded] = useState(false);
+    const isLong = proc.description && proc.description.length > 120;
+
+    return (
+      <div className="card-salon group bg-white border-none shadow-xl flex flex-col">
+        <div className="aspect-video overflow-hidden shrink-0">
+          <img
+            src={assetSrc(categoryImages[proc.category] || serviceHair)}
+            alt={proc.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            loading="lazy"
+            width={400}
+            height={300}
+          />
+        </div>
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="font-display font-bold text-lg mb-1 text-black">
+            {proc.name}
+          </h3>
+          {proc.description && (
+            <div className="mb-3">
+              <p className={`text-sm text-muted-foreground leading-relaxed ${expanded ? '' : 'line-clamp-3'}`}>
+                {proc.description}
+              </p>
+              {isLong && (
+                <button 
+                  onClick={() => setExpanded(!expanded)} 
+                  className="text-xs font-bold text-gold-dark mt-1 hover:underline focus:outline-none"
+                >
+                  {expanded ? "Ler menos" : "Ler mais"}
+                </button>
+              )}
+            </div>
+          )}
+          <div className="mt-auto pt-4">
+            <div className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-gold/15 text-gold-dark mb-4">
+              <Clock size={12} /> {formatDuration(proc.duration)}
+            </div>
+            <button
+              onClick={onBook}
+              className="btn-gold w-full text-sm flex items-center justify-center gap-2"
+            >
+              <Calendar size={14} /> Marcar Horário
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div>
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
@@ -47,40 +98,7 @@ export default function ServicesPage() {
         <div ref={ref} className="container-salon scroll-reveal">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
             {procedures.map((proc) => (
-              <div
-                key={proc.id}
-                className="card-salon group bg-white border-none shadow-xl"
-              >
-                <div className="aspect-video overflow-hidden">
-                  <img
-                    src={assetSrc(categoryImages[proc.category] || serviceHair)}
-                    alt={proc.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    loading="lazy"
-                    width={400}
-                    height={300}
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="font-display font-bold text-lg mb-1 text-black">
-                    {proc.name}
-                  </h3>
-                  {proc.description && (
-                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed line-clamp-3 ">
-                      {proc.description}
-                    </p>
-                  )}
-                  <div className="inline-flex items-center gap-1 text-xs  font-medium px-3 py-1 rounded-full bg-gold/15 text-gold-dark mb-4">
-                    <Clock size={12} /> {formatDuration(proc.duration)}
-                  </div>
-                  <button
-                    onClick={() => dispatch({ type: "OPEN_MODAL" })}
-                    className="btn-gold w-full text-sm flex items-center justify-center gap-2"
-                  >
-                    <Calendar size={14} /> Marcar Horário
-                  </button>
-                </div>
-              </div>
+              <ProcedureCard key={proc.id} proc={proc} onBook={() => dispatch({ type: "OPEN_MODAL" })} />
             ))}
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getReceptionDashboard, ReceptionDashboardData } from '@/services/dashboardService';
-import { confirmBooking, cancelBooking, completeBooking } from '@/services/bookingService';
+import { confirmBooking, cancelBooking, completeBooking, markPresentBooking } from '@/services/bookingService';
 import { getProfessionals } from '@/services/professionalService';
 import { Professional } from '@/types';
 import { Loader2, MessageCircle, Check, X, CheckCheck, RefreshCw } from 'lucide-react';
@@ -10,6 +10,7 @@ import {
   showApiErrorToast,
   showValidationToast,
 } from '@/utils/apiErrors';
+import FinishBookingModal from '@/components/admin/FinishBookingModal';
 
 function localCalendarToday(): string {
   const now = new Date();
@@ -38,6 +39,7 @@ export default function ReceptionDashboard() {
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelFormError, setCancelFormError] = useState('');
+  const [finishTarget, setFinishTarget] = useState<string | null>(null);
 
   const allowComplete = date === localCalendarToday();
 
@@ -101,10 +103,24 @@ export default function ReceptionDashboard() {
     }
   };
 
-  const handleComplete = async (id: string) => {
+  const handleMarkPresent = async (id: string) => {
     setActionId(id);
     try {
-      await completeBooking(id);
+      await markPresentBooking(id);
+      refresh();
+    } catch (e: unknown) {
+      showApiErrorToast(e, 'Não foi possível marcar como presente');
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleComplete = async (extraProcedureId?: string, extraProfessionalId?: string, discountPercentage?: number) => {
+    if (!finishTarget) return;
+    setActionId(finishTarget);
+    try {
+      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage);
+      setFinishTarget(null);
       refresh();
     } catch (e: unknown) {
       showApiErrorToast(e, 'Não foi possível concluir o atendimento');
@@ -258,6 +274,12 @@ export default function ReceptionDashboard() {
                       </span>
                     </div>
 
+                    {b.status === 'PRESENT' && (
+                      <div className="mb-3 text-xs rounded-lg border border-gold bg-gold/10 px-3 py-2 text-gold-dark font-medium flex items-center gap-2">
+                        <CheckCheck size={14} /> Cliente presente no salão. Aguardando conclusão do atendimento.
+                      </div>
+                    )}
+
                     {b.observations ? (
                       <div className="mb-3 text-xs rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
                         <span className="font-semibold text-black">Observações: </span>
@@ -288,9 +310,16 @@ export default function ReceptionDashboard() {
                     </div>
 
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <p className="text-sm font-bold text-gold-dark">
-                        Total: {b.totalAmountFormatted}
-                      </p>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-gold-dark">
+                          Total: {b.totalAmountFormatted}
+                        </p>
+                        {b.discountAmount ? (
+                          <p className="text-xs text-green-600 font-medium">
+                            Desconto aplicado: {b.discountPercentage}% (- {b.discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
+                          </p>
+                        ) : null}
+                      </div>
                       <div className="flex gap-2">
                         {b.status === 'PENDING' && (
                           <>
@@ -320,10 +349,22 @@ export default function ReceptionDashboard() {
                               disabled={actionId === b.id || !allowComplete}
                               title={
                                 !allowComplete
+                                  ? 'Só é possível marcar presente no dia do atendimento'
+                                  : undefined
+                              }
+                              onClick={() => handleMarkPresent(b.id)}
+                              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 inline-flex items-center gap-1"
+                            >
+                              <Check size={12} /> Cliente Presente
+                            </button>
+                            <button
+                              disabled={actionId === b.id || !allowComplete}
+                              title={
+                                !allowComplete
                                   ? 'Só é possível concluir no dia do atendimento'
                                   : undefined
                               }
-                              onClick={() => handleComplete(b.id)}
+                              onClick={() => setFinishTarget(b.id)}
                               className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-foreground text-background hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-1"
                             >
                               <CheckCheck size={12} /> Concluir
@@ -341,6 +382,20 @@ export default function ReceptionDashboard() {
                             </button>
                           </>
                         )}
+                        {b.status === 'PRESENT' && (
+                          <button
+                            disabled={actionId === b.id || !allowComplete}
+                            title={
+                              !allowComplete
+                                ? 'Só é possível concluir no dia do atendimento'
+                                : undefined
+                            }
+                            onClick={() => setFinishTarget(b.id)}
+                            className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-foreground text-background hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-1 w-full sm:w-auto justify-center"
+                          >
+                            <CheckCheck size={12} /> Concluir Atendimento
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -349,6 +404,14 @@ export default function ReceptionDashboard() {
             )}
           </>
         )
+      )}
+
+      {finishTarget && data?.bookings.find((b) => b.id === finishTarget) && (
+        <FinishBookingModal
+          booking={data.bookings.find((b) => b.id === finishTarget) as any}
+          onConfirm={handleComplete}
+          onClose={() => setFinishTarget(null)}
+        />
       )}
 
       {cancelTarget && (

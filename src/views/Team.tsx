@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Professional } from "@/types";
 import { getProfessionals } from "@/services/professionalService";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -86,15 +86,16 @@ export default function TeamPage() {
                         <h3 className="font-display font-bold text-black font-bold">
                           {prof.name}
                         </h3>
-                        {prof.bio && (
+                        {prof.bio && !prof.description && (
                           <p className="text-xs text-muted-foreground mb-3 leading-relaxed text-black">
                             {prof.bio}
                           </p>
                         )}
-                        <div className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-gold/15 text-gold-dark mt-2">
-                          <Clock size={12} />{" "}
-                          {formatWorkingHours(prof.workingHours)}
-                        </div>
+                        {prof.description && (
+                          <p className="text-xs text-muted-foreground mb-3 leading-relaxed text-black mt-2">
+                            {prof.description}
+                          </p>
+                        )}
                       </div>
                     ))}
                 </div>

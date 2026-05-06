@@ -1,4 +1,4 @@
-﻿import { Procedure } from '@/types';
+import { Procedure } from '@/types';
 import { api } from '@/services/api';
 
 export async function getProcedures(params?: { search?: string; category?: string }): Promise<Procedure[]> {
@@ -44,4 +44,8 @@ export async function deactivateProcedure(id: string): Promise<void> {
 
 export async function reactivateProcedure(id: string): Promise<void> {
   await api.patch(`/procedures/${id}/reactivate`);
+}
+
+export async function deleteProcedure(id: string): Promise<void> {
+  await api.delete(`/procedures/${id}`);
 }

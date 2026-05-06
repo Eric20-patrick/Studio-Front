@@ -1,4 +1,4 @@
-﻿import { api } from "@/services/api";
+import { api } from "@/services/api";
 import {
   Booking,
   BookingStatus,
@@ -20,6 +20,7 @@ export interface CreateBookingPayload {
     period: "manha" | "tarde";
     startTime?: string; // ISO se conhecido
   }[];
+  marketingConsent?: boolean;
 }
 
 export interface ListBookingsParams {
@@ -113,9 +114,21 @@ export function cancelBooking(id: string, reason: string): Promise<Booking> {
   return api.patch<Booking>(`/bookings/${id}/cancel`, { reason });
 }
 
-export function completeBooking(id: string): Promise<Booking> {
-  return api.patch<Booking>(`/bookings/${id}/complete`);
+export function markPresentBooking(id: string): Promise<Booking> {
+  return api.patch<Booking>(`/bookings/${id}/present`);
 }
+
+export const completeBooking = async (
+  id: string,
+  extraProcedureId?: string,
+  extraProfessionalId?: string,
+  discountPercentage?: number
+): Promise<Booking> => {
+  return api.patch<Booking>(
+    `/bookings/${id}/complete`,
+    { extraProcedureId, extraProfessionalId, discountPercentage }
+  );
+};
 
 // ─── Períodos fixos ───────────────────────────────────────
 export function getAvailablePeriods() {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * API client com interceptor de JWT e refresh automático.
  * Configure NEXT_PUBLIC_API_URL no `.env.local` (ex.: http://localhost:3333).
  */
@@ -11,12 +11,14 @@ const API_PREFIX = "/api";
 const ACCESS_TOKEN_KEY = "studio_neo_access_token";
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  if (typeof window === 'undefined') return null;
+  return sessionStorage.getItem(ACCESS_TOKEN_KEY);
 }
 
 export function setAccessToken(token: string | null) {
-  if (token) localStorage.setItem(ACCESS_TOKEN_KEY, token);
-  else localStorage.removeItem(ACCESS_TOKEN_KEY);
+  if (typeof window === 'undefined') return;
+  if (token) sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
+  else sessionStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
 export class ApiError extends Error {

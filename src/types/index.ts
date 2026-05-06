@@ -40,6 +40,7 @@ export interface Professional {
   workingHours?: WorkingHourBlock[]; // ← opcional
   avatarUrl?: string | null;
   isActive?: boolean;
+  description?: string | null;
   // campos de compatibilidade com mocks antigos
   specialty?: string;
   bio?: string;
@@ -96,6 +97,7 @@ export interface BookingForm {
   selectedPeriods: Period[];
   procedureProfessionals: ProcedureProfessional[];
   items: BookingItemSelection[];
+  marketingConsent: boolean;
 }
 
 export interface BookingResponse {
@@ -161,6 +163,8 @@ export interface Booking {
   clientEmail?: string | null;
   totalAmount: number;
   totalAmountFormatted?: string;
+  discountPercentage?: number | null;
+  discountAmount?: number | null;
   items: BookingItem[];
   cancellationReason?: string | null;
   observations?: string | null;

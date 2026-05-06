@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import {
   BookingForm,
   BookingItemSelection,
@@ -41,6 +41,7 @@ type BookingAction =
   | { type: "SET_EMAIL"; payload: string }
   | { type: "SET_OBSERVATIONS"; payload: string }
   | { type: "SET_SUBMITTING"; payload: boolean }
+  | { type: "SET_CONSENT"; payload: boolean }
   | { type: "SET_SUCCESS" }
   | { type: "RESET" };
 
@@ -54,6 +55,7 @@ const initialForm: BookingForm = {
   selectedPeriods: [],
   procedureProfessionals: [],
   items: [],
+  marketingConsent: false,
 };
 
 const initialState: BookingState = {
@@ -175,6 +177,8 @@ function bookingReducer(
       };
     case "SET_SUBMITTING":
       return { ...state, isSubmitting: action.payload };
+    case "SET_CONSENT":
+      return { ...state, form: { ...state.form, marketingConsent: action.payload } };
     case "SET_SUCCESS":
       return { ...state, isSubmitting: false, isSuccess: true };
     case "RESET":
