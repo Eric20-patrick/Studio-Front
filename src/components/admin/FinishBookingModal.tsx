@@ -2,12 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { getAdminProcedures } from '@/services/procedureService';
 import { getProfessionals } from '@/services/professionalService';
 import { Procedure, Booking, Professional } from '@/types';
-import { X, Loader2, CheckCheck, Search } from 'lucide-react';
+import { X, Loader2, CheckCheck, Search, Plus } from 'lucide-react';
 import { formatCurrency } from '@/utils';
 
 interface FinishBookingModalProps {
   booking: Booking;
-  onConfirm: (extraProcedureId?: string, extraProfessionalId?: string, discountPercentage?: number) => Promise<void>;
+  onConfirm: (
+    extraProcedureId?: string, 
+    extraProfessionalId?: string, 
+    discountPercentage?: number,
+    extraProcedures?: { procedureId: string; professionalId?: string }[]
+  ) => Promise<void>;
   onClose: () => void;
 }
 
@@ -18,6 +23,7 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
   const [submitting, setSubmitting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [extraProceduresList, setExtraProceduresList] = useState<{ procedure: Procedure; professionalId: string }[]>([]);
   const [selectedExtraProc, setSelectedExtraProc] = useState<Procedure | null>(null);
   const [selectedExtraProfId, setSelectedExtraProfId] = useState<string>('');
   const [discountPercentage, setDiscountPercentage] = useState<number | ''>('');
@@ -47,7 +53,9 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
     return professionals.filter(p => p.specialties?.includes(selectedExtraProc.category) || p.specialty === selectedExtraProc.category);
   }, [selectedExtraProc, professionals]);
 
-  const extraTotal = selectedExtraProc?.price || 0;
+  const extraTotal = 
+    (selectedExtraProc?.price || 0) + 
+    extraProceduresList.reduce((acc, p) => acc + (p.procedure.price || 0), 0);
   const subtotal = scheduledTotal + extraTotal;
   const discountAmount = typeof discountPercentage === 'number' ? subtotal * (discountPercentage / 100) : 0;
   const finalTotal = subtotal - discountAmount;
@@ -56,7 +64,16 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
     setSubmitting(true);
     try {
       const discount = typeof discountPercentage === 'number' ? discountPercentage : undefined;
-      await onConfirm(selectedExtraProc?.id, selectedExtraProfId || undefined, discount);
+      const extraList = extraProceduresList.map(ep => ({
+        procedureId: ep.procedure.id,
+        professionalId: ep.professionalId
+      }));
+      await onConfirm(
+        selectedExtraProc?.id, 
+        selectedExtraProfId || undefined, 
+        discount,
+        extraList.length > 0 ? extraList : undefined
+      );
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +113,30 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
 
             {/* Procedimento Avulso */}
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-black">Adicionar Procedimento Avulso</h4>
+              <h4 className="text-sm font-semibold text-black">Adicionar Procedimentos Avulsos</h4>
+              
+              {extraProceduresList.map((ep, idx) => {
+                const profName = professionals.find(p => p.id === ep.professionalId)?.name || '';
+                return (
+                  <div key={idx} className="bg-gold/5 border border-gold/10 rounded-lg p-3 flex justify-between items-center text-sm">
+                    <div>
+                      <div className="font-medium text-gold-dark">{ep.procedure.name}</div>
+                      <div className="text-xs text-muted-foreground">Profissional: {profName}</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-black">{formatCurrency(ep.procedure.price || 0)}</span>
+                      <button onClick={() => {
+                        const newList = [...extraProceduresList];
+                        newList.splice(idx, 1);
+                        setExtraProceduresList(newList);
+                      }} className="text-muted-foreground hover:text-red-500">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
               {!selectedExtraProc ? (
                 <div className="relative">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-foreground">
@@ -145,16 +185,32 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground mb-1 block">Profissional que realizou</label>
-                    <select
-                      value={selectedExtraProfId}
-                      onChange={(e) => setSelectedExtraProfId(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold outline-none text-black"
-                    >
-                      <option value="">Selecione o profissional</option>
-                      {availableProfessionalsForExtra.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2 items-end">
+                      <select
+                        value={selectedExtraProfId}
+                        onChange={(e) => setSelectedExtraProfId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold outline-none text-black flex-1"
+                      >
+                        <option value="">Selecione o profissional</option>
+                        {availableProfessionalsForExtra.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                      {selectedExtraProfId && (
+                        <button 
+                          onClick={() => {
+                            setExtraProceduresList([...extraProceduresList, { procedure: selectedExtraProc, professionalId: selectedExtraProfId }]);
+                            setSelectedExtraProc(null);
+                            setSelectedExtraProfId('');
+                            setSearchTerm('');
+                          }}
+                          className="px-3 py-2 rounded-lg bg-gold text-white hover:bg-gold-dark flex items-center justify-center transition-colors"
+                          title="Adicionar outro procedimento avulso"
+                        >
+                          <Plus size={20} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -179,8 +235,8 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
                 <span className="font-medium text-black">{formatCurrency(subtotal)}</span>
               </div>
               {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span>Desconto aplicado</span>
+                <div className="flex justify-between text-sm text-red-600">
+                  <span>Desconto aplicado ({discountPercentage}%)</span>
                   <span>- {formatCurrency(discountAmount)}</span>
                 </div>
               )}

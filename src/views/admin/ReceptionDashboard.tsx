@@ -34,6 +34,7 @@ export default function ReceptionDashboard() {
   const [date, setDate] = useState(() => localCalendarToday());
   const [professionalId, setProfessionalId] = useState('');
   const [procedureId, setProcedureId] = useState('');
+  const [searchClient, setSearchClient] = useState('');
 
   const [actionId, setActionId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
@@ -73,10 +74,20 @@ export default function ReceptionDashboard() {
   useEffect(() => {
     setProfessionalId('');
     setProcedureId('');
+    setSearchClient('');
     setCatalog(null);
   }, [date]);
 
-
+  const filteredBookings = useMemo(() => {
+    if (!data?.bookings) return [];
+    if (!searchClient.trim()) return data.bookings;
+    const lowerSearch = searchClient.toLowerCase();
+    return data.bookings.filter((b) =>
+      b.client.name.toLowerCase().includes(lowerSearch) &&
+      b.status !== 'COMPLETED' &&
+      b.status !== 'CANCELLED'
+    );
+  }, [data, searchClient]);
 
   const procOptions = useMemo(() => {
     const src = catalog ?? data;
@@ -115,11 +126,16 @@ export default function ReceptionDashboard() {
     }
   };
 
-  const handleComplete = async (extraProcedureId?: string, extraProfessionalId?: string, discountPercentage?: number) => {
+  const handleComplete = async (
+    extraProcedureId?: string, 
+    extraProfessionalId?: string, 
+    discountPercentage?: number,
+    extraProcedures?: { procedureId: string; professionalId?: string }[]
+  ) => {
     if (!finishTarget) return;
     setActionId(finishTarget);
     try {
-      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage);
+      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures);
       setFinishTarget(null);
       refresh();
     } catch (e: unknown) {
@@ -161,6 +177,15 @@ export default function ReceptionDashboard() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap">
         <h1 className="text-2xl font-display font-bold">Fila do dia</h1>
         <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar cliente..."
+              value={searchClient}
+              onChange={(e) => setSearchClient(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold/20 outline-none w-full sm:w-[180px]"
+            />
+          </div>
           <input
             type="date"
             value={date}
@@ -233,13 +258,13 @@ export default function ReceptionDashboard() {
               />
             </div>
 
-            {data.bookings.length === 0 ? (
+            {filteredBookings.length === 0 ? (
               <p className="text-center text-muted-foreground py-12">
-                Nenhum agendamento para este dia.
+                {searchClient.trim() ? "Cliente não encontrado" : "Nenhum agendamento encontrado."}
               </p>
             ) : (
               <div className="space-y-3">
-                {data.bookings.map((b) => (
+                {filteredBookings.map((b) => (
                   <div
                     key={b.id}
                     className="bg-white shadow-lg border border-border rounded-xl p-5"
@@ -315,7 +340,7 @@ export default function ReceptionDashboard() {
                           Total: {b.totalAmountFormatted}
                         </p>
                         {b.discountAmount ? (
-                          <p className="text-xs text-green-600 font-medium">
+                          <p className="text-xs text-red-600 font-medium">
                             Desconto aplicado: {b.discountPercentage}% (- {b.discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
                           </p>
                         ) : null}
