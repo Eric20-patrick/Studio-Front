@@ -124,7 +124,7 @@ export default function AdminClientsPage() {
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50 text-muted-foreground font-medium border-b border-border">
+              <thead className="hidden md:table-header-group bg-muted/50 text-muted-foreground font-medium border-b border-border">
                 <tr>
                   <th className="px-6 py-4">Cliente</th>
                   <th className="px-6 py-4">Contato (Mascarado)</th>
@@ -134,28 +134,35 @@ export default function AdminClientsPage() {
                   <th className="px-6 py-4 text-center">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border block md:table-row-group">
                 {loading ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
+                  <tr className="block md:table-row">
+                    <td colSpan={6} className="px-6 py-12 text-center block md:table-cell">
                       <Loader2 className="animate-spin text-gold mx-auto" size={24} />
                     </td>
                   </tr>
                 ) : clients.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                  <tr className="block md:table-row">
+                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground block md:table-cell">
                       Nenhum cliente encontrado.
                     </td>
                   </tr>
                 ) : (
                   clients.map((client, idx) => (
-                    <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-6 py-4 font-medium">{client.clientName}</td>
-                      <td className="px-6 py-4 font-mono text-xs">
-                        {client.clientPhone}<br />
-                        <span className="text-[10px] text-muted-foreground">{client.clientEmail || 'Sem email'}</span>
+                    <tr key={idx} className="hover:bg-muted/30 transition-colors flex flex-col md:table-row p-4 md:p-0 gap-2 md:gap-0 border-b border-border md:border-0 last:border-0">
+                      <td className="px-0 py-1 md:px-6 md:py-4 font-medium flex justify-between items-center md:table-cell">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Cliente</span>
+                        <span className="text-right md:text-left">{client.clientName}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-0 py-1 md:px-6 md:py-4 font-mono text-xs flex justify-between items-start md:table-cell">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Contato</span>
+                        <div className="text-right md:text-left">
+                          {client.clientPhone}<br />
+                          <span className="text-[10px] text-muted-foreground">{client.clientEmail || 'Sem email'}</span>
+                        </div>
+                      </td>
+                      <td className="px-0 py-1 md:px-6 md:py-4 flex justify-between items-center md:table-cell">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">LGPD</span>
                         {client.marketingConsent ? (
                           <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded text-xs">
                             <CheckCircle2 size={12} /> Consentido
@@ -166,9 +173,16 @@ export default function AdminClientsPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center font-bold">{client.totalVisits}</td>
-                      <td className="px-6 py-4 text-right">{client.totalSpentFormatted}</td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-0 py-1 md:px-6 md:py-4 text-right md:text-center font-bold flex justify-between items-center md:table-cell">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Visitas</span>
+                        <span>{client.totalVisits}</span>
+                      </td>
+                      <td className="px-0 py-1 md:px-6 md:py-4 text-right flex justify-between items-center md:table-cell">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Total Gasto</span>
+                        <span>{client.totalSpentFormatted}</span>
+                      </td>
+                      <td className="px-0 py-1 md:px-6 md:py-4 text-right md:text-center flex justify-between items-center md:table-cell mt-2 md:mt-0 pt-3 md:pt-4 border-t border-border/50 md:border-0">
+                        <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Ações</span>
                         <button
                           onClick={() => handleViewFull(client)}
                           className="p-2 text-gold-dark hover:bg-gold/10 rounded-lg transition-colors inline-flex"

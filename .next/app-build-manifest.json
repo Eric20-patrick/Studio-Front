@@ -1,14 +1,19 @@
 {
   "pages": {
-    "/(marketing)/page": [
+    "/admin/(protected)/agendamentos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/page.js"
+      "static/chunks/app/admin/(protected)/agendamentos/page.js"
     ],
-    "/(marketing)/layout": [
+    "/admin/(protected)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/layout.js"
+      "static/chunks/app/admin/(protected)/layout.js"
+    ],
+    "/admin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,45 +31,30 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/login/page.js"
     ],
-    "/admin/layout": [
+    "/admin/(protected)/recepcao/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/layout.js"
+      "static/chunks/app/admin/(protected)/recepcao/page.js"
     ],
-    "/admin/(protected)/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/page.js"
-    ],
-    "/admin/(protected)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/layout.js"
-    ],
-    "/admin/(protected)/profissionais/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/profissionais/page.js"
+      "static/chunks/app/_not-found/page.js"
     ],
     "/(marketing)/equipe/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(marketing)/equipe/page.js"
     ],
-    "/admin/(protected)/agendamentos/page": [
+    "/(marketing)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/agendamentos/page.js"
+      "static/chunks/app/(marketing)/layout.js"
     ],
-    "/admin/(protected)/recepcao/page": [
+    "/admin/(protected)/profissionais/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/recepcao/page.js"
-    ],
-    "/admin/(protected)/clientes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/clientes/page.js"
+      "static/chunks/app/admin/(protected)/profissionais/page.js"
     ]
   }
 }

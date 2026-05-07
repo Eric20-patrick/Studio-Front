@@ -59,7 +59,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-8 pt-6 text-center text-sm text-white/50">
-          © 2024 Studio Neo. Todos os direitos reservados.
+          © 2024 EricTech. Todos os direitos reservados.
         </div>
       </div>
     </footer>

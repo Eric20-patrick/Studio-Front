@@ -128,7 +128,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* CARDS DE MÉTRICAS (REVENUE + SUMMARY) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={<TrendingUp size={18} />}
           label="Faturamento"

@@ -130,12 +130,13 @@ export default function ReceptionDashboard() {
     extraProcedureId?: string, 
     extraProfessionalId?: string, 
     discountPercentage?: number,
-    extraProcedures?: { procedureId: string; professionalId?: string }[]
+    extraProcedures?: { procedureId: string; professionalId?: string }[],
+    paymentMethod?: string
   ) => {
     if (!finishTarget) return;
     setActionId(finishTarget);
     try {
-      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures);
+      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures, paymentMethod);
       setFinishTarget(null);
       refresh();
     } catch (e: unknown) {
@@ -171,6 +172,7 @@ export default function ReceptionDashboard() {
       setActionId(null);
     }
   };
+  
 
   return (
     <div className="space-y-6">
@@ -243,7 +245,7 @@ export default function ReceptionDashboard() {
       ) : (
         data && (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <Mini label="Total" value={data.summary.total} />
               <Mini label="Pendentes" value={data.summary.pending} color="text-yellow-700" />
               <Mini label="Confirmados" value={data.summary.confirmed} color="text-blue-700" />
@@ -344,6 +346,12 @@ export default function ReceptionDashboard() {
                             Desconto aplicado: {b.discountPercentage}% (- {b.discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
                           </p>
                         ) : null}
+                        {b.status === 'COMPLETED' && (
+                          <div className="text-xs text-muted-foreground mt-2 bg-muted/30 p-2 rounded-lg border border-border">
+                            <p><span className="font-semibold text-black">Forma de Pagamento:</span> {b.paymentMethod || 'Não informado'}</p>
+                            <p><span className="font-semibold text-black">Concluído em:</span> {b.completedAt ? new Date(b.completedAt).toLocaleString('pt-BR') : 'Não informado'}</p>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         {b.status === 'PENDING' && (

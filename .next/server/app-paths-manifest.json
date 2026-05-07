@@ -1,8 +1,5 @@
 {
-  "/(marketing)/equipe/page": "app/(marketing)/equipe/page.js",
   "/admin/login/page": "app/admin/login/page.js",
-  "/admin/(protected)/page": "app/admin/(protected)/page.js",
-  "/admin/(protected)/clientes/page": "app/admin/(protected)/clientes/page.js",
-  "/admin/(protected)/agendamentos/page": "app/admin/(protected)/agendamentos/page.js",
-  "/admin/(protected)/recepcao/page": "app/admin/(protected)/recepcao/page.js"
+  "/admin/(protected)/recepcao/page": "app/admin/(protected)/recepcao/page.js",
+  "/admin/(protected)/agendamentos/page": "app/admin/(protected)/agendamentos/page.js"
 }

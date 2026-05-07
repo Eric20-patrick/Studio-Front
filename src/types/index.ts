@@ -165,6 +165,8 @@ export interface Booking {
   totalAmountFormatted?: string;
   discountPercentage?: number | null;
   discountAmount?: number | null;
+  paymentMethod?: string | null;
+  completedAt?: string | null;
   items: BookingItem[];
   cancellationReason?: string | null;
   observations?: string | null;

@@ -123,11 +123,12 @@ export const completeBooking = async (
   extraProcedureId?: string,
   extraProfessionalId?: string,
   discountPercentage?: number,
-  extraProcedures?: { procedureId: string; professionalId?: string }[]
+  extraProcedures?: { procedureId: string; professionalId?: string }[],
+  paymentMethod?: string
 ): Promise<Booking> => {
   return api.patch<Booking>(
     `/bookings/${id}/complete`,
-    { extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures }
+    { extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures, paymentMethod }
   );
 };
 

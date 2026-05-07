@@ -142,7 +142,7 @@ export default function AdminProcedures() {
       ) : (
         <div className="bg-white shadow-lg border border-border rounded-xl overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-muted">
+            <thead className="hidden md:table-header-group bg-muted">
               <tr>
                 <th className="text-left p-3">Nome</th>
                 <th className="text-left p-3">Categoria</th>
@@ -152,13 +152,23 @@ export default function AdminProcedures() {
                 <th className="text-right p-3">Ações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="block md:table-row-group">
               {items.map((p) => (
-                <tr key={p.id} className="border-t border-border">
-                  <td className="p-3 font-medium">{p.name}</td>
-                  <td className="p-3 text-muted-foreground">{p.category}</td>
-                  <td className="p-3">{formatDuration(p.duration)}</td>
-                  <td className="p-3">
+                <tr key={p.id} className="border-t border-border flex flex-col md:table-row p-4 md:p-0 gap-2 md:gap-0">
+                  <td className="px-0 py-1 md:p-3 font-medium flex justify-between items-center md:table-cell">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Nome</span>
+                    <span className="text-right md:text-left">{p.name}</span>
+                  </td>
+                  <td className="px-0 py-1 md:p-3 text-muted-foreground flex justify-between items-center md:table-cell">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Categoria</span>
+                    <span className="text-right md:text-left">{p.category}</span>
+                  </td>
+                  <td className="px-0 py-1 md:p-3 flex justify-between items-center md:table-cell">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Duração</span>
+                    <span>{formatDuration(p.duration)}</span>
+                  </td>
+                  <td className="px-0 py-1 md:p-3 flex justify-between items-center md:table-cell">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Preço</span>
                     <button
                       onClick={() => {
                         setPriceTarget(p);
@@ -170,45 +180,49 @@ export default function AdminProcedures() {
                       {formatCurrency(p.price)}
                     </button>
                   </td>
-                  <td className="p-3">
+                  <td className="px-0 py-1 md:p-3 flex justify-between items-center md:table-cell">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Status</span>
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${p.isActive === false ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/15 text-emerald-700'}`}
                     >
                       {p.isActive === false ? 'INATIVO' : 'ATIVO'}
                     </span>
                   </td>
-                  <td className="p-3 text-right space-x-1">
-                    <button
-                      onClick={() => {
-                        setFieldErrors({});
-                        setEditing({
-                          id: p.id,
-                          name: p.name,
-                          category: p.category,
-                          description: p.description || '',
-                          duration: Number(p.duration) || 60,
-                          interval: p.interval || 15,
-                          price: p.price || 0,
-                        });
-                      }}
-                      className="p-1.5 hover:bg-muted rounded"
-                    >
-                      <Pencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => toggleActive(p)}
-                      title={p.isActive === false ? 'Reativar' : 'Inativar'}
-                      className="p-1.5 hover:bg-muted rounded"
-                    >
-                      <Power size={14} className={p.isActive === false ? "text-emerald-600" : "text-amber-600"} />
-                    </button>
-                    <button
-                      onClick={() => deleteProc(p)}
-                      title="Excluir procedimento"
-                      className="p-1.5 hover:bg-destructive/10 rounded text-destructive"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  <td className="px-0 py-1 md:p-3 text-right md:text-right space-x-1 flex justify-between items-center md:table-cell mt-2 md:mt-0 pt-3 md:pt-3 border-t border-border/50 md:border-0">
+                    <span className="md:hidden font-bold text-muted-foreground text-[10px] uppercase">Ações</span>
+                    <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => {
+                          setFieldErrors({});
+                          setEditing({
+                            id: p.id,
+                            name: p.name,
+                            category: p.category,
+                            description: p.description || '',
+                            duration: Number(p.duration) || 60,
+                            interval: p.interval || 15,
+                            price: p.price || 0,
+                          });
+                        }}
+                        className="p-1.5 hover:bg-muted rounded"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => toggleActive(p)}
+                        title={p.isActive === false ? 'Reativar' : 'Inativar'}
+                        className="p-1.5 hover:bg-muted rounded"
+                      >
+                        <Power size={14} className={p.isActive === false ? "text-emerald-600" : "text-amber-600"} />
+                      </button>
+                      <button
+                        onClick={() => deleteProc(p)}
+                        title="Excluir procedimento"
+                        className="p-1.5 hover:bg-destructive/10 rounded text-destructive"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

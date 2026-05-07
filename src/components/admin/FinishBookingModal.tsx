@@ -11,7 +11,8 @@ interface FinishBookingModalProps {
     extraProcedureId?: string, 
     extraProfessionalId?: string, 
     discountPercentage?: number,
-    extraProcedures?: { procedureId: string; professionalId?: string }[]
+    extraProcedures?: { procedureId: string; professionalId?: string }[],
+    paymentMethod?: string
   ) => Promise<void>;
   onClose: () => void;
 }
@@ -27,6 +28,7 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
   const [selectedExtraProc, setSelectedExtraProc] = useState<Procedure | null>(null);
   const [selectedExtraProfId, setSelectedExtraProfId] = useState<string>('');
   const [discountPercentage, setDiscountPercentage] = useState<number | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
@@ -72,7 +74,8 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
         selectedExtraProc?.id, 
         selectedExtraProfId || undefined, 
         discount,
-        extraList.length > 0 ? extraList : undefined
+        extraList.length > 0 ? extraList : undefined,
+        paymentMethod
       );
     } finally {
       setSubmitting(false);
@@ -245,6 +248,26 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
                 <span className="text-xl font-bold text-gold-dark">{formatCurrency(finalTotal)}</span>
               </div>
             </div>
+
+            {/* Forma de Pagamento */}
+            <div className="border-t border-border pt-4 space-y-3">
+              <h4 className="text-sm font-semibold text-black">Forma de Pagamento</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {['Cartão de Crédito', 'Cartão de Débito', 'PIX', 'Dinheiro'].map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+                      paymentMethod === method
+                        ? 'bg-gold text-white border-gold font-medium'
+                        : 'bg-background text-black border-border hover:bg-muted'
+                    }`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -257,7 +280,7 @@ export default function FinishBookingModal({ booking, onConfirm, onClose }: Fini
           </button>
           <button
             onClick={handleConfirm}
-            disabled={submitting || (!!selectedExtraProc && !selectedExtraProfId)}
+            disabled={submitting || (!!selectedExtraProc && !selectedExtraProfId) || !paymentMethod}
             className="btn-gold !py-2 !text-sm min-w-[140px] flex justify-center items-center gap-2 disabled:opacity-50"
           >
             {submitting && <Loader2 size={16} className="animate-spin" />}

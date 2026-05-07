@@ -14,6 +14,7 @@ import {
   showApiErrorToast,
   showValidationToast,
 } from '@/utils/apiErrors';
+import FinishBookingModal from '@/components/admin/FinishBookingModal';
 
 const STATUSES: { id: BookingStatus | 'ALL'; label: string }[] = [
   { id: 'ALL', label: 'Todos' },
@@ -41,6 +42,7 @@ export default function AdminBookings() {
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelFormError, setCancelFormError] = useState('');
+  const [finishTarget, setFinishTarget] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = 'Agendamentos | Studio Neo';
@@ -89,6 +91,26 @@ export default function AdminBookings() {
     }
   };
 
+  const handleComplete = async (
+    extraProcedureId?: string, 
+    extraProfessionalId?: string, 
+    discountPercentage?: number,
+    extraProcedures?: { procedureId: string; professionalId?: string }[],
+    paymentMethod?: string
+  ) => {
+    if (!finishTarget) return;
+    setActionId(finishTarget);
+    try {
+      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures, paymentMethod);
+      setFinishTarget(null);
+      refresh();
+    } catch (e: unknown) {
+      showApiErrorToast(e, 'Não foi possível concluir o atendimento');
+    } finally {
+      setActionId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -99,7 +121,7 @@ export default function AdminBookings() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-        <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit overflow-x-auto">
+        <div className="flex flex-wrap gap-1 bg-muted rounded-lg p-1 w-full sm:w-fit">
           {STATUSES.map((s) => (
             <button
               key={s.id}
@@ -205,7 +227,7 @@ export default function AdminBookings() {
                 b={b}
                 actionId={actionId}
                 onConfirm={() => doAction(() => confirmBooking(b.id), b.id)}
-                onComplete={() => doAction(() => completeBooking(b.id), b.id)}
+                onComplete={() => setFinishTarget(b.id)}
                 onCancel={() => {
                   setCancelFormError('');
                   setCancelReason('');
@@ -310,6 +332,14 @@ export default function AdminBookings() {
           </div>
         </div>
       )}
+
+      {finishTarget && bookingsList.find((b) => b.id === finishTarget) && (
+        <FinishBookingModal
+          booking={bookingsList.find((b) => b.id === finishTarget) as any}
+          onConfirm={handleComplete}
+          onClose={() => setFinishTarget(null)}
+        />
+      )}
     </div>
   );
 }
@@ -409,6 +439,12 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: any) {
             </div>
           </div>
         ))}
+        {b.status === 'COMPLETED' && (
+          <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
+            <p className="mb-0.5"><span className="font-semibold text-black">Forma de Pagamento:</span> {b.paymentMethod || 'Não informado'}</p>
+            <p><span className="font-semibold text-black">Concluído em:</span> {b.completedAt ? new Date(b.completedAt).toLocaleString('pt-BR') : 'Não informado'}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between pt-2">
