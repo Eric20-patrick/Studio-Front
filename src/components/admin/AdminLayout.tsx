@@ -44,14 +44,14 @@ export default function AdminLayout({
       {/* Spacer para o menu absolute no mobile */}
       <div className="w-16 md:hidden flex-shrink-0" />
 
-      <aside id="admin-sidebar" className="fixed md:sticky top-0 left-0 h-screen bg-card border-r border-border flex flex-col transition-all duration-300 overflow-hidden group w-16 hover:w-64 md:w-full z-50 shadow-2xl md:shadow-none">
+      <aside id="admin-sidebar" className="fixed md:sticky top-0 left-0 h-screen bg-card border-r border-border flex flex-col overflow-hidden w-16 md:w-full z-50 shadow-2xl md:shadow-none">
         <div className="p-6 border-b border-border whitespace-nowrap flex items-center overflow-hidden">
           <Link
             href="/admin"
             className="font-display font-bold text-xl tracking-tight flex items-center gap-2"
           >
             <div className="w-2 h-6 bg-gold rounded-full shrink-0" />
-            <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Studio Neo</span>
+            <span className="hidden md:inline">Studio Neo</span>
           </Link>
         </div>
 
@@ -77,7 +77,7 @@ export default function AdminLayout({
               href="/admin"
               className={navClass(pathname === "/admin")}
             >
-              <LayoutDashboard size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Dashboard</span>
+              <LayoutDashboard size={18} className="shrink-0" /> <span className="hidden md:inline">Dashboard</span>
             </Link>
           )}
 
@@ -85,14 +85,14 @@ export default function AdminLayout({
             href="/admin/recepcao"
             className={navClass(pathname === "/admin/recepcao")}
           >
-            <ClipboardList size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Fila do dia</span>
+            <ClipboardList size={18} className="shrink-0" /> <span className="hidden md:inline">Fila do dia</span>
           </Link>
 
           <Link
             href="/admin/agendamentos"
             className={navClass(pathname === "/admin/agendamentos")}
           >
-            <Calendar size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Agendamentos</span>
+            <Calendar size={18} className="shrink-0" /> <span className="hidden md:inline">Agendamentos</span>
           </Link>
 
           {hasRole("ADMIN") && (
@@ -100,7 +100,7 @@ export default function AdminLayout({
               href="/admin/clientes"
               className={navClass(pathname === "/admin/clientes")}
             >
-              <Users size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Clientes</span>
+              <Users size={18} className="shrink-0" /> <span className="hidden md:inline">Clientes</span>
             </Link>
           )}
 
@@ -108,7 +108,7 @@ export default function AdminLayout({
             canDelegated("canManageProfessionals") ||
             canDelegated("canManageProcedures")) && (
             <div className="pt-4 pb-2 px-3">
-              <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-tighter transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground/50 tracking-tighter hidden md:block">
                 Configurações
               </p>
             </div>
@@ -118,7 +118,7 @@ export default function AdminLayout({
               href="/admin/profissionais"
               className={navClass(pathname === "/admin/profissionais")}
             >
-              <Users size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Profissionais</span>
+              <Users size={18} className="shrink-0" /> <span className="hidden md:inline">Profissionais</span>
             </Link>
           )}
           {canDelegated("canManageProcedures") && (
@@ -126,7 +126,7 @@ export default function AdminLayout({
               href="/admin/procedimentos"
               className={navClass(pathname === "/admin/procedimentos")}
             >
-              <Scissors size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Procedimentos</span>
+              <Scissors size={18} className="shrink-0" /> <span className="hidden md:inline">Procedimentos</span>
             </Link>
           )}
         </nav>
@@ -159,7 +159,7 @@ export default function AdminLayout({
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-2 py-2 mt-1 rounded-lg text-sm text-destructive hover:bg-destructive/10 transition-colors font-medium whitespace-nowrap"
           >
-            <LogOut size={18} className="shrink-0" /> <span className="transition-opacity duration-300 md:opacity-100 opacity-0 group-hover:opacity-100">Sair do sistema</span>
+            <LogOut size={18} className="shrink-0" /> <span className="hidden md:inline">Sair do sistema</span>
           </button>
         </div>
       </aside>

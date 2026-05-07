@@ -27,6 +27,7 @@ export interface ListBookingsParams {
   status?: BookingStatus;
   date?: string;
   professionalId?: string;
+  search?: string;
   page?: number;
   limit?: number;
 }

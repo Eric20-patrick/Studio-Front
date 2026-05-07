@@ -2247,6 +2247,9 @@ h1,
 .uppercase{
   text-transform: uppercase;
 }
+.lowercase{
+  text-transform: lowercase;
+}
 .italic{
   font-style: italic;
 }
@@ -3972,6 +3975,10 @@ h1,
     width: fit-content;
   }
 
+  .sm\:min-w-\[200px\]{
+    min-width: 200px;
+  }
+
   .sm\:max-w-sm{
     max-width: 24rem;
   }
@@ -4055,6 +4062,10 @@ h1,
 
   .md\:block{
     display: block;
+  }
+
+  .md\:inline{
+    display: inline;
   }
 
   .md\:flex{

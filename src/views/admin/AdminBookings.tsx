@@ -7,7 +7,7 @@ import {
 } from '@/services/bookingService';
 import { Booking, BookingStatus, Professional } from '@/types';
 import { getProfessionals } from '@/services/professionalService';
-import { Loader2, Check, X, CheckCheck, MessageCircle, RefreshCw } from 'lucide-react';
+import { Loader2, Check, X, CheckCheck, MessageCircle, RefreshCw, Search } from 'lucide-react';
 import { formatTimeFromIso, formatCurrency } from '@/utils';
 import {
   getFieldErrorsFromUnknown,
@@ -30,6 +30,7 @@ export default function AdminBookings() {
   const [status, setStatus] = useState<BookingStatus | 'ALL'>('ALL');
   const [filterDate, setFilterDate] = useState('');
   const [filterProfessionalId, setFilterProfessionalId] = useState('');
+  const [searchClient, setSearchClient] = useState('');
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [page, setPage] = useState(1);
 
@@ -56,6 +57,7 @@ export default function AdminBookings() {
     if (status !== 'ALL') params.status = status;
     if (filterDate) params.date = filterDate;
     if (filterProfessionalId) params.professionalId = filterProfessionalId;
+    if (searchClient) params.search = searchClient;
 
     listBookings(params)
       .then((res: any) => {
@@ -73,7 +75,7 @@ export default function AdminBookings() {
         setError(e?.message || 'Erro ao carregar agendamentos');
       })
       .finally(() => setLoading(false));
-  }, [status, page, filterDate, filterProfessionalId]);
+  }, [status, page, filterDate, filterProfessionalId, searchClient]);
 
   useEffect(() => {
     refresh();
@@ -120,7 +122,7 @@ export default function AdminBookings() {
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-border shadow-sm">
         <div className="flex flex-wrap gap-1 bg-muted rounded-lg p-1 w-full sm:w-fit">
           {STATUSES.map((s) => (
             <button
@@ -139,64 +141,68 @@ export default function AdminBookings() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 text-sm flex-wrap">
-          <label htmlFor="admin-booking-prof" className="text-muted-foreground whitespace-nowrap">
-            Profissional
-          </label>
-          <select
-            id="admin-booking-prof"
-            value={filterProfessionalId}
-            onChange={(e) => {
-              setFilterProfessionalId(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 rounded-lg border border-input bg-background text-sm max-w-[200px]"
-          >
-            <option value="">Todos</option>
-            {professionals.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">Buscar Cliente</label>
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <input
+                type="text"
+                placeholder="Digite o nome..."
+                value={searchClient}
+                onChange={(e) => {
+                  setSearchClient(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold outline-none"
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="admin-booking-prof" className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between">
+              Profissional
+              {filterProfessionalId && (
+                <button type="button" onClick={() => { setFilterProfessionalId(''); setPage(1); }} className="text-[10px] text-gold-dark hover:underline lowercase font-medium">limpar</button>
+              )}
+            </label>
+            <select
+              id="admin-booking-prof"
+              value={filterProfessionalId}
+              onChange={(e) => {
+                setFilterProfessionalId(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold outline-none"
+            >
+              <option value="">Todos</option>
+              {professionals.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <label htmlFor="admin-booking-date" className="text-muted-foreground whitespace-nowrap ml-2">
-            Dia do atendimento
-          </label>
-          <input
-            id="admin-booking-date"
-            type="date"
-            value={filterDate}
-            onChange={(e) => {
-              setFilterDate(e.target.value);
-              setPage(1);
-            }}
-            className="px-3 py-2 rounded-lg border border-input bg-background text-sm"
-          />
-          {filterDate && (
-            <button
-              type="button"
-              onClick={() => {
-                setFilterDate('');
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="admin-booking-date" className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between">
+              Dia do atendimento
+              {filterDate && (
+                <button type="button" onClick={() => { setFilterDate(''); setPage(1); }} className="text-[10px] text-gold-dark hover:underline lowercase font-medium">limpar</button>
+              )}
+            </label>
+            <input
+              id="admin-booking-date"
+              type="date"
+              value={filterDate}
+              onChange={(e) => {
+                setFilterDate(e.target.value);
                 setPage(1);
               }}
-              className="text-xs text-gold-dark hover:underline"
-            >
-              Limpar Data
-            </button>
-          )}
-          {filterProfessionalId && (
-            <button
-              type="button"
-              onClick={() => {
-                setFilterProfessionalId('');
-                setPage(1);
-              }}
-              className="text-xs text-gold-dark hover:underline"
-            >
-              Limpar Profissional
-            </button>
-          )}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:ring-2 ring-gold outline-none"
+            />
+          </div>
         </div>
       </div>
 
