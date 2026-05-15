@@ -1,7 +1,13 @@
-﻿"use client";
+"use client";
 
+import dynamic from "next/dynamic";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
-import AdminProfessionals from "@/views/admin/AdminProfessionals";
+import AdminPageSkeleton from "@/components/admin/AdminPageSkeleton";
+
+const AdminProfessionals = dynamic(() => import("@/views/admin/AdminProfessionals"), {
+  loading: () => <AdminPageSkeleton />,
+  ssr: false,
+});
 
 export default function Page() {
   return (

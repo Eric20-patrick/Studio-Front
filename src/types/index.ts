@@ -120,6 +120,7 @@ export interface DelegatedPermissions {
   canManageProcedures?: boolean;
   canViewAdminDashboard?: boolean;
   canExportReports?: boolean;
+  canViewClients?: boolean;
 }
 
 export interface AuthUser {

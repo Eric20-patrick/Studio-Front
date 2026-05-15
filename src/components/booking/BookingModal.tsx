@@ -1,14 +1,22 @@
-﻿import { useBooking } from "@/hooks/useBooking";
+import { useState, useEffect } from "react";
+import { useBooking } from "@/hooks/useBooking";
 import { BOOKING_STEPS } from "@/constants";
-import { X, Check } from "lucide-react";
+import { X, Check, AlertCircle } from "lucide-react";
 import StepProcedures from "./StepProcedures";
 import StepDateTime from "./StepDateTime";
-import StepProfessional from "./StepProfessional";
 import StepUserData from "./StepUserData";
 import BookingSuccess from "./BookingSuccess";
 
 export default function BookingModal() {
   const { state, dispatch } = useBooking();
+  const [validationError, setValidationError] = useState("");
+
+  useEffect(() => {
+    if (!state.isOpen) {
+      setValidationError("");
+    }
+  }, [state.isOpen]);
+
   if (!state.isOpen) return null;
 
   if (state.isSuccess) {
@@ -30,17 +38,31 @@ export default function BookingModal() {
       case 1:
         return state.form.procedures.length > 0;
       case 2:
-        return (
-          state.form.items.length > 0 &&
-          state.form.items.every((i) => !!i.startTime || i.noPreference)
-        );
+        return true; // Keep active as requested
       case 3:
-        return true;
-      case 4:
         return false;
       default:
         return false;
     }
+  };
+
+  const handleNext = () => {
+    setValidationError("");
+
+    if (state.currentStep === 2) {
+      const allSelected =
+        state.form.items.length > 0 &&
+        state.form.items.every((i) => !!i.startTime && !i.noPreference);
+
+      if (!allSelected) {
+        setValidationError(
+          "Por favor, selecione o profissional e o horário para todos os procedimentos.",
+        );
+        return;
+      }
+    }
+
+    dispatch({ type: "NEXT_STEP" });
   };
 
   const renderStep = () => {
@@ -50,8 +72,6 @@ export default function BookingModal() {
       case 2:
         return <StepDateTime />;
       case 3:
-        return <StepProfessional />;
-      case 4:
         return <StepUserData />;
       default:
         return null;
@@ -121,23 +141,34 @@ export default function BookingModal() {
         <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-border">
-          <button
-            onClick={() => dispatch({ type: "PREV_STEP" })}
-            disabled={state.currentStep === 1}
-            className="px-6 py-2.5 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Voltar
-          </button>
-          {state.currentStep < 4 ? (
+        <div className="flex flex-col border-t border-border">
+          {validationError && (
+            <div className="flex items-center gap-2 px-6 py-3 bg-destructive/10 text-destructive text-sm font-medium animate-in fade-in slide-in-from-top-1">
+              <AlertCircle size={16} />
+              {validationError}
+            </div>
+          )}
+          <div className="flex items-center justify-between p-6">
             <button
-              onClick={() => dispatch({ type: "NEXT_STEP" })}
-              disabled={!canNext()}
-              className="btn-gold !py-2.5 !text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              onClick={() => {
+                setValidationError("");
+                dispatch({ type: "PREV_STEP" });
+              }}
+              disabled={state.currentStep === 1}
+              className="px-6 py-2.5 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              Próximo
+              Voltar
             </button>
-          ) : null}
+            {state.currentStep < BOOKING_STEPS.length ? (
+              <button
+                onClick={handleNext}
+                disabled={!canNext()}
+                className="btn-gold !py-2.5 !text-sm disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Próximo
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

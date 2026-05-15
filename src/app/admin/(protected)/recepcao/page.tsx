@@ -1,6 +1,12 @@
-﻿"use client";
+"use client";
 
-import ReceptionDashboard from "@/views/admin/ReceptionDashboard";
+import dynamic from "next/dynamic";
+import AdminPageSkeleton from "@/components/admin/AdminPageSkeleton";
+
+const ReceptionDashboard = dynamic(() => import("@/views/admin/ReceptionDashboard"), {
+  loading: () => <AdminPageSkeleton />,
+  ssr: false,
+});
 
 export default function Page() {
   return <ReceptionDashboard />;

@@ -29,7 +29,12 @@ export default function ServicesPage() {
     getProcedures().then(setProcedures);
   }, []);
 
-  const ProcedureCard = ({ proc, onBook }: { proc: Procedure; onBook: () => void }) => {
+  interface ProcedureCardProps {
+    proc: Procedure;
+    onBook: () => void;
+  }
+
+  const ProcedureCard = ({ proc, onBook }: ProcedureCardProps) => {
     const [expanded, setExpanded] = useState(false);
     const isLong = proc.description && proc.description.length > 120;
 

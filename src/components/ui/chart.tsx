@@ -68,6 +68,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   return (
     <style
       dangerouslySetInnerHTML={{
+        // Seguro: CSS dinâmico gerado internamente, sem user input
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `

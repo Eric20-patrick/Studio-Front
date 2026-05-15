@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getReceptionDashboard, ReceptionDashboardData } from '@/services/dashboardService';
 import { confirmBooking, cancelBooking, completeBooking, markPresentBooking } from '@/services/bookingService';
 import { getProfessionals } from '@/services/professionalService';
@@ -21,10 +22,7 @@ function localCalendarToday(): string {
 }
 
 export default function ReceptionDashboard() {
-  const [data, setData] = useState<ReceptionDashboardData | null>(null);
   const [catalog, setCatalog] = useState<ReceptionDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [professionals, setProfessionals] = useState<Professional[]>([]);
 
   useEffect(() => {
@@ -48,28 +46,30 @@ export default function ReceptionDashboard() {
     document.title = 'Fila do dia | Studio Neo';
   }, []);
 
-  const refresh = useCallback(() => {
-    if (!date) return;
-    setLoading(true);
-    setError('');
-    getReceptionDashboard({
-      date,
-      professionalId: professionalId || undefined,
-      procedureId: procedureId || undefined,
-    })
-      .then((d) => {
-        setData(d);
-        if (!professionalId && !procedureId) {
-          setCatalog(d);
-        }
-      })
-      .catch((e) => setError(e?.message || 'Erro ao carregar agenda'))
-      .finally(() => setLoading(false));
-  }, [date, professionalId, procedureId]);
+  const params = {
+    date,
+    professionalId: professionalId || undefined,
+    procedureId: procedureId || undefined,
+  };
+
+  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: ['receptionDashboard', params],
+    queryFn: async () => {
+      return await getReceptionDashboard(params);
+    },
+    staleTime: 30 * 1000,
+    enabled: !!date,
+  });
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (queryData && !professionalId && !procedureId) {
+      setCatalog(queryData);
+    }
+  }, [queryData, professionalId, procedureId]);
+
+  const data = queryData || null;
+  const error = queryError ? (queryError as Error).message : '';
+  const refresh = refetch;
 
   useEffect(() => {
     setProfessionalId('');

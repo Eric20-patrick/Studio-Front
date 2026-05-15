@@ -33,7 +33,7 @@ export interface ReceptionDashboardData {
     expectedRevenueFormatted: string;
   };
   bookings: Array<{
-    completedAt: any;
+    completedAt: string | Date | null;
     paymentMethod: string;
     id: string;
     status: string;

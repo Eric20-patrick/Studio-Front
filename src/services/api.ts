@@ -1,6 +1,12 @@
 /**
  * API client com interceptor de JWT e refresh automático.
  * Configure NEXT_PUBLIC_API_URL no `.env.local` (ex.: http://localhost:3333).
+ *
+ * Estratégia de Segurança:
+ * - Access token: Armazenado em memória (protegido contra XSS)
+ * - Refresh token: Armazenado em httpOnly cookie (protegido contra XSS e CSRF)
+ * - Token em memória é perdido ao recarregar a página (requer novo login ou refresh via cookie)
+ * - credentials: "include" garante que cookies httpOnly sejam enviados automaticamente
  */
 
 const BASE_URL = (
@@ -8,17 +14,14 @@ const BASE_URL = (
 ).replace(/\/$/, "");
 const API_PREFIX = "/api";
 
-const ACCESS_TOKEN_KEY = "studio_neo_access_token";
+let accessToken: string | null = null;
 
 export function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem(ACCESS_TOKEN_KEY);
+  return accessToken;
 }
 
 export function setAccessToken(token: string | null) {
-  if (typeof window === 'undefined') return;
-  if (token) sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
-  else sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  accessToken = token;
 }
 
 export class ApiError extends Error {

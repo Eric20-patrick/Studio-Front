@@ -88,7 +88,7 @@ function bookingReducer(
       return { ...initialState };
 
     case "NEXT_STEP":
-      return { ...state, currentStep: Math.min(state.currentStep + 1, 4) };
+      return { ...state, currentStep: Math.min(state.currentStep + 1, 3) };
 
     case "PREV_STEP":
       return { ...state, currentStep: Math.max(state.currentStep - 1, 1) };

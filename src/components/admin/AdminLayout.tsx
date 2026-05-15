@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useMemo, useCallback } from "react";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,21 +32,17 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
       router.replace("/admin/login");
     } catch (error) {
       console.error("Erro ao deslogar:", error);
     }
-  };
+  }, [logout, router]);
 
-  return (
-    <div className="min-h-screen bg-background flex md:grid md:grid-cols-[16rem_1fr]">
-      {/* Spacer para o menu absolute no mobile */}
-      <div className="w-16 md:hidden flex-shrink-0" />
-
-      <aside id="admin-sidebar" className="fixed md:sticky top-0 left-0 h-screen bg-card border-r border-border flex flex-col overflow-hidden w-16 md:w-full z-50 shadow-2xl md:shadow-none">
+  const sidebar = useMemo(() => (
+    <aside id="admin-sidebar" className="fixed md:sticky top-0 left-0 h-screen bg-card border-r border-border flex flex-col overflow-hidden w-16 md:w-full z-50 shadow-2xl md:shadow-none">
         <div className="p-6 border-b border-border whitespace-nowrap flex items-center overflow-hidden">
           <Link
             href="/admin"
@@ -163,6 +161,14 @@ export default function AdminLayout({
           </button>
         </div>
       </aside>
+  ), [pathname, user, canDelegated, hasRole, handleLogout]);
+
+  return (
+    <div className="min-h-screen bg-background flex md:grid md:grid-cols-[16rem_1fr]">
+      {/* Spacer para o menu absolute no mobile */}
+      <div className="w-16 md:hidden flex-shrink-0" />
+
+      {sidebar}
 
       <main className="flex-1 overflow-auto relative bg-[#fafafa] w-full min-w-0">
         <div className="p-6 lg:p-10 max-w-7xl mx-auto min-h-full">{children}</div>

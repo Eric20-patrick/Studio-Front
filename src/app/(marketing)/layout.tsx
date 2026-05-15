@@ -1,16 +1,23 @@
-﻿"use client";
+"use client";
 
+import dynamic from "next/dynamic";
+import { useBooking } from "@/hooks/useBooking";
 import TopBanner from "@/components/layout/TopBanner";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FloatingBookingButton from "@/components/shared/FloatingBookingButton";
-import BookingModal from "@/components/booking/BookingModal";
+
+const BookingModal = dynamic(() => import("@/components/booking/BookingModal"), {
+  ssr: false,
+});
 
 export default function MarketingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { state } = useBooking();
+
   return (
     <>
       <TopBanner />
@@ -18,7 +25,7 @@ export default function MarketingLayout({
       <main className="min-h-screen">{children}</main>
       <Footer />
       <FloatingBookingButton />
-      <BookingModal />
+      {state.isOpen && <BookingModal />}
     </>
   );
 }

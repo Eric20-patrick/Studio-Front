@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getAdminDashboard } from '@/services/dashboardService';
+import { useQuery } from '@tanstack/react-query';
+import { getAdminDashboard, AdminDashboardData } from '@/services/dashboardService';
 import { downloadCompletedReport } from '@/services/reportExportService';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -23,10 +24,7 @@ const FILTERS = [
 
 export default function AdminDashboard() {
   const { canDelegated } = useAuth();
-  const [data, setData] = useState<any>(null);
   const [filter, setFilter] = useState<'day' | 'week' | 'month' | 'year'>('month');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const now = new Date();
   const [repYear, setRepYear] = useState(now.getFullYear());
   const [repMonth, setRepMonth] = useState(now.getMonth() + 1);
@@ -37,23 +35,17 @@ export default function AdminDashboard() {
     document.title = 'Dashboard | Studio Neo Admin';
   }, []);
 
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
+  const { data: queryData, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['adminDashboard', filter],
+    queryFn: async () => {
       const res = await getAdminDashboard(filter);
-      const dashboardData = (res as { data?: unknown }).data ?? res;
-      setData(dashboardData);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Erro ao carregar dashboard');
-    } finally {
-      setLoading(false);
-    }
-  }, [filter]);
+      return ((res as { data?: AdminDashboardData }).data ?? res) as AdminDashboardData;
+    },
+    staleTime: 60 * 1000, // 1 minuto de cache
+  });
 
-  useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
+  const error = queryError ? (queryError as Error).message : '';
+  const data = queryData;
 
   if (loading)
     return (
@@ -66,15 +58,16 @@ export default function AdminDashboard() {
   if (!data) return null;
 
   // --- MAPEAMENTO SEGURO DOS DADOS DO SEU BACKEND ---
-  const revenue = data.revenue || {};
-  const summary = data.summary || {};
+  const revenue = data.revenue;
+  const summary = data.summary;
   const proceduresList = Array.isArray(data.topProcedures) ? data.topProcedures : [];
   const professionalsList = Array.isArray(data.topProfessionals) ? data.topProfessionals : [];
 
+  const rawBookingCount = revenue.bookingCount;
   const bookingCountDisplay =
-    typeof revenue.bookingCount === 'object' && revenue.bookingCount !== null
-      ? ((revenue.bookingCount as { _all?: number })._all ?? 0)
-      : Number(revenue.bookingCount ?? 0);
+    typeof rawBookingCount === 'object' && rawBookingCount !== null
+      ? ((rawBookingCount as unknown as { _all?: number })._all ?? 0)
+      : Number(rawBookingCount ?? 0);
 
   const runExport = async (format: 'pdf' | 'xlsx') => {
     setExpBusy(format);
@@ -163,7 +156,7 @@ export default function AdminDashboard() {
           </h3>
           <ul className="space-y-3">
             {proceduresList.length > 0 ? (
-              proceduresList.slice(0, 5).map((tp: any, i: number) => (
+              proceduresList.slice(0, 5).map((tp, i: number) => (
                 <li
                   key={tp.procedure?.id || i}
                   className="flex items-center justify-between text-sm"
@@ -192,7 +185,7 @@ export default function AdminDashboard() {
           </h3>
           <ul className="space-y-3">
             {professionalsList.length > 0 ? (
-              professionalsList.slice(0, 5).map((tp: any, i: number) => (
+              professionalsList.slice(0, 5).map((tp, i: number) => (
                 <li
                   key={tp.professional?.id || i}
                   className="flex items-center justify-between text-sm"
@@ -202,8 +195,8 @@ export default function AdminDashboard() {
                     {tp.professional?.name || 'Profissional'}
                   </span>
                   <span className="text-xs text-gold-dark font-bold whitespace-nowrap">
-                    {tp.totalAppointments || tp.count || 0} •{' '}
-                    {tp.totalRevenueFormatted || tp.revenueFormatted}
+                    {tp.totalAppointments || 0} •{' '}
+                    {tp.totalRevenueFormatted}
                   </span>
                 </li>
               ))
@@ -319,7 +312,14 @@ export default function AdminDashboard() {
 }
 
 // COMPONENTES AUXILIARES
-function StatCard({ icon, label, value, sub }: any) {
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  sub?: string;
+}
+
+function StatCard({ icon, label, value, sub }: StatCardProps) {
   return (
     <div className="bg-white border border-border rounded-xl p-5 shadow-lg">
       <div className="flex items-center gap-2 text-muted-foreground text-[10px] uppercase tracking-widest font-bold">

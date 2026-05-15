@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   listBookings,
   confirmBooking,
@@ -25,20 +26,12 @@ const STATUSES: { id: BookingStatus | 'ALL'; label: string }[] = [
 ];
 
 export default function AdminBookings() {
-  const [bookingsList, setBookingsList] = useState<Booking[]>([]);
-  const [meta, setMeta] = useState({ totalPages: 1 });
   const [status, setStatus] = useState<BookingStatus | 'ALL'>('ALL');
   const [filterDate, setFilterDate] = useState('');
   const [filterProfessionalId, setFilterProfessionalId] = useState('');
   const [searchClient, setSearchClient] = useState('');
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    getProfessionals().then(setProfessionals).catch(() => {});
-  }, []);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -46,40 +39,33 @@ export default function AdminBookings() {
   const [finishTarget, setFinishTarget] = useState<string | null>(null);
 
   useEffect(() => {
+    getProfessionals().then(setProfessionals).catch(() => {});
     document.title = 'Agendamentos | Studio Neo';
   }, []);
+  const params = {
+    page,
+    limit: 20,
+    status: status !== 'ALL' ? status : undefined,
+    date: filterDate || undefined,
+    professionalId: filterProfessionalId || undefined,
+    search: searchClient || undefined,
+  };
 
-  const refresh = useCallback(() => {
-    setLoading(true);
-    setError('');
+  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: ['adminBookings', params],
+    queryFn: async () => {
+      const res: any = await listBookings(params);
+      if (Array.isArray(res)) return { data: res, meta: { totalPages: 1 } };
+      return { data: res.data || [], meta: res.meta || { totalPages: 1 } };
+    },
+    staleTime: 30 * 1000,
+  });
 
-    const params: Record<string, unknown> = { page, limit: 20 };
-    if (status !== 'ALL') params.status = status;
-    if (filterDate) params.date = filterDate;
-    if (filterProfessionalId) params.professionalId = filterProfessionalId;
-    if (searchClient) params.search = searchClient;
-
-    listBookings(params)
-      .then((res: any) => {
-        if (Array.isArray(res)) {
-          setBookingsList(res);
-          setMeta({ totalPages: 1 });
-        } else if (res && res.data) {
-          setBookingsList(res.data);
-          setMeta(res.meta || { totalPages: 1 });
-        } else {
-          setBookingsList([]);
-        }
-      })
-      .catch((e) => {
-        setError(e?.message || 'Erro ao carregar agendamentos');
-      })
-      .finally(() => setLoading(false));
-  }, [status, page, filterDate, filterProfessionalId, searchClient]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const error = queryError ? (queryError as Error).message : '';
+  const bookingsList = queryData?.data || [];
+  const meta = queryData?.meta || { totalPages: 1 };
+  
+  const refresh = refetch;
 
   const doAction = async (fn: () => Promise<unknown>, id: string) => {
     setActionId(id);
@@ -356,7 +342,15 @@ function bookingCalendarDaySp(isoString: string): string {
   });
 }
 
-function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: any) {
+interface BookingRowProps {
+  b: Booking;
+  actionId: string | null;
+  onConfirm: () => void;
+  onComplete: () => void;
+  onCancel: () => void;
+}
+
+function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRowProps) {
   const phoneDigits = b.clientPhone?.replace(/\D/g, '') || '';
   const firstStart = b.items?.[0]?.startTime as string | undefined;
   const todaySp = new Date().toLocaleDateString('en-CA', {
@@ -425,7 +419,7 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: any) {
       </div>
 
       <div className="bg-muted/30 rounded-lg p-3 space-y-2 mb-4 border border-border/40">
-        {b.items?.map((it: any, i: number) => (
+        {b.items?.map((it, i: number) => (
           <div
             key={i}
             className="text-xs flex justify-between border-b border-border/30 last:border-0 pb-1.5 last:pb-0"

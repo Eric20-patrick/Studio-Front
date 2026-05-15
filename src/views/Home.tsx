@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Testimonial } from "@/types";
@@ -28,7 +28,11 @@ export default function HomePage() {
   );
 }
 
-function HeroSection({ onBook }: { onBook: () => void }) {
+interface HeroSectionProps {
+  onBook: () => void;
+}
+
+function HeroSection({ onBook }: HeroSectionProps) {
   const ref = useScrollReveal();
 
   return (

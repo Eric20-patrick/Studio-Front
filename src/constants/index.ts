@@ -1,4 +1,4 @@
-﻿export const SALON_INFO = {
+export const SALON_INFO = {
   name: 'Studio Neo',
   phone: '5511977485165',
   address: 'São Paulo, SP',
@@ -13,8 +13,7 @@
 export const BOOKING_STEPS = [
   { id: 1, label: 'Procedimento' },
   { id: 2, label: 'Data e Horário' },
-  { id: 3, label: 'Profissional' },
-  { id: 4, label: 'Seus Dados' },
+  { id: 3, label: 'Seus Dados' },
 ] as const;
 
 export const NAV_LINKS = [

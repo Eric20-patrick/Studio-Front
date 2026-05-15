@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Professional, WorkingHourBlock, WeekDay } from '@/types';
 import {
   getProfessionals,
@@ -20,6 +21,7 @@ import {
   Image as ImageIcon,
   Trash2,
 } from 'lucide-react';
+import Image from 'next/image';
 import { formatWorkingHours } from '@/utils';
 import {
   getFieldErrorsFromUnknown,
@@ -61,10 +63,6 @@ const empty: FormState = {
 };
 
 export default function AdminProfessionals() {
-  const [items, setItems] = useState<Professional[]>([]);
-  const [proceduresList, setProceduresList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [editing, setEditing] = useState<FormState | null>(null);
   const [hoursTarget, setHoursTarget] = useState<{
     id: string;
@@ -79,19 +77,19 @@ export default function AdminProfessionals() {
     document.title = 'Profissionais | Studio Neo';
   }, []);
 
-  const refresh = () => {
-    setLoading(true);
-    setError('');
-    Promise.all([getProfessionals(), getAdminProcedures()])
-      .then(([profs, procs]) => {
-        setItems(profs);
-        setProceduresList(procs);
-      })
-      .catch((e) => setError(e?.message || 'Erro ao carregar profissionais'))
-      .finally(() => setLoading(false));
-  };
+  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: ['adminProfessionalsAndProcs'],
+    queryFn: async () => {
+      const [profs, procs] = await Promise.all([getProfessionals(), getAdminProcedures()]);
+      return { profs, procs };
+    },
+    staleTime: 10 * 60 * 1000,
+  });
 
-  useEffect(refresh, []);
+  const error = queryError ? (queryError as Error).message : '';
+  const items = queryData?.profs || [];
+  const proceduresList = queryData?.procs || [];
+  const refresh = refetch;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -230,9 +228,9 @@ export default function AdminProfessionals() {
               className="bg-white border border-border rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border flex-shrink-0 relative">
                   {p.avatarUrl ? (
-                    <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <Image src={p.avatarUrl} alt={p.name} fill sizes="48px" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <ImageIcon size={20} />
@@ -321,7 +319,7 @@ export default function AdminProfessionals() {
                 className="w-24 h-24 rounded-full border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-gold transition-colors relative overflow-hidden bg-muted/30"
               >
                 {editing.avatarUrl ? (
-                  <img src={editing.avatarUrl} className="w-full h-full object-cover" />
+                  <Image src={editing.avatarUrl} alt="Avatar" fill sizes="96px" className="object-cover" unoptimized={editing.avatarUrl.startsWith('data:')} />
                 ) : (
                   <>
                     <Upload size={20} className="text-muted-foreground mb-1" />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Procedure } from '@/types';
 import {
   getAdminProcedures,
@@ -38,9 +39,6 @@ const empty: FormState = {
 };
 
 export default function AdminProcedures() {
-  const [items, setItems] = useState<Procedure[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [editing, setEditing] = useState<FormState | null>(null);
   const [priceTarget, setPriceTarget] = useState<Procedure | null>(null);
   const [priceValue, setPriceValue] = useState(0);
@@ -51,15 +49,17 @@ export default function AdminProcedures() {
     document.title = 'Procedimentos | Studio Neo';
   }, []);
 
-  const refresh = () => {
-    setLoading(true);
-    setError('');
-    getAdminProcedures()
-      .then(setItems)
-      .catch((e) => setError(e?.message || 'Erro'))
-      .finally(() => setLoading(false));
-  };
-  useEffect(refresh, []);
+  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+    queryKey: ['adminProcedures'],
+    queryFn: async () => {
+      return await getAdminProcedures();
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const error = queryError ? (queryError as Error).message : '';
+  const items = queryData || [];
+  const refresh = refetch;
 
   const save = async () => {
     if (!editing) return;

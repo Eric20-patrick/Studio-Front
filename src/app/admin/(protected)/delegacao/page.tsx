@@ -1,7 +1,13 @@
-﻿"use client";
+"use client";
 
+import dynamic from "next/dynamic";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
-import AdminDelegation from "@/views/admin/AdminDelegation";
+import AdminPageSkeleton from "@/components/admin/AdminPageSkeleton";
+
+const AdminDelegation = dynamic(() => import("@/views/admin/AdminDelegation"), {
+  loading: () => <AdminPageSkeleton />,
+  ssr: false,
+});
 
 export default function Page() {
   return (
