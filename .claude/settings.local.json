@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3333)",
+      "Bash(findstr LISTENING)",
+      "Bash(taskkill /PID 13504 /F)",
+      "PowerShell(Stop-Process -Id 13504 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(\"Processo finalizado\")",
+      "Bash(node -e \"const bcrypt = require\\('bcryptjs'\\); console.log\\(bcrypt.hashSync\\('password123', 12\\)\\);\")",
+      "Bash(node -e ' *)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit -m 'feat: Semana 2 - Estrutura de testes com Jest \\(5/28 testes passando\\) *)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue)"
+    ]
+  }
+}
