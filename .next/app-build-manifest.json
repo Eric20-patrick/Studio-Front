@@ -21,21 +21,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/(marketing)/servicos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/servicos/page.js"
-    ],
-    "/(marketing)/equipe/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/equipe/page.js"
-    ],
-    "/(marketing)/blog/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/blog/page.js"
-    ],
     "/admin/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -56,30 +41,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/(protected)/layout.js"
     ],
-    "/admin/(protected)/procedimentos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/procedimentos/page.js"
-    ],
-    "/admin/(protected)/recepcao/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/recepcao/page.js"
-    ],
-    "/admin/(protected)/agendamentos/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/agendamentos/page.js"
-    ],
-    "/admin/(protected)/clientes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/(protected)/clientes/page.js"
-    ],
     "/admin/(protected)/profissionais/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/(protected)/profissionais/page.js"
+    ],
+    "/admin/(protected)/procedimentos/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/admin/(protected)/procedimentos/page.js"
     ],
     "/_not-found/page": [
       "static/chunks/webpack.js",
