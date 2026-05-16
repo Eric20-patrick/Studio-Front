@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Professional, WorkingHourBlock, WeekDay } from '@/types';
 import {
   getProfessionals,
@@ -22,7 +22,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import Image from 'next/image';
-import { formatWorkingHours } from '@/utils';
 import {
   getFieldErrorsFromUnknown,
   collapseFieldErrors,
@@ -63,6 +62,7 @@ const empty: FormState = {
 };
 
 export default function AdminProfessionals() {
+  const queryClient = useQueryClient();
   const [editing, setEditing] = useState<FormState | null>(null);
   const [hoursTarget, setHoursTarget] = useState<{
     id: string;
@@ -70,6 +70,7 @@ export default function AdminProfessionals() {
     workingHours: WorkingHourBlock[];
   } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [specialtySearch, setSpecialtySearch] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,7 +84,9 @@ export default function AdminProfessionals() {
       const [profs, procs] = await Promise.all([getProfessionals(), getAdminProcedures()]);
       return { profs, procs };
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 0, // Sempre considera os dados como stale para refetch imediato
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const error = queryError ? (queryError as Error).message : '';
@@ -137,13 +140,23 @@ export default function AdminProfessionals() {
     if (!editing) return;
     setFieldErrors({});
     try {
+      // Validação básica
+      if (!editing.name.trim()) {
+        setFieldErrors({ name: 'Nome é obrigatório' });
+        return;
+      }
+      if (!editing.specialties.trim()) {
+        setFieldErrors({ specialties: 'Selecione pelo menos uma especialidade' });
+        return;
+      }
+
       const phoneDigits = editing.phone.replace(/\D/g, '');
       const payload = {
         name: editing.name.trim(),
         email: editing.email.trim() || undefined,
         phone: phoneDigits.length ? phoneDigits : undefined,
         avatarUrl: editing.avatarUrl.trim() || undefined,
-        description: editing.description.trim() || undefined,
+        description: editing.description.trim(),
         specialties: editing.specialties
           .split(',')
           .map((s) => s.trim())
@@ -151,15 +164,40 @@ export default function AdminProfessionals() {
         workingHours: editing.workingHours,
       };
 
+      let success = false;
       if (editing.id) {
         await updateProfessional(editing.id, payload);
         await updateProfessionalWorkingHours(editing.id, editing.workingHours);
+        success = true;
       } else {
         await createProfessional(payload);
+        success = true;
       }
 
-      setEditing(null);
-      refresh();
+      if (success) {
+        // Pequeno delay para garantir que o backend processou a alteração
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Remove COMPLETAMENTE os dados do cache de TODAS as queries relacionadas
+        queryClient.removeQueries({ predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && (
+            key.includes('professional') ||
+            key.includes('Professional') ||
+            key.includes('procedure') ||
+            key.includes('Procedure') ||
+            key.includes('team') ||
+            key.includes('Team')
+          );
+        }});
+
+        // Força um novo fetch dos dados frescos do servidor
+        await refetch();
+
+        setEditing(null);
+        setSpecialtySearch('');
+        showValidationToast('Profissional salvo com sucesso!', {});
+      }
     } catch (e: unknown) {
       const details = getFieldErrorsFromUnknown(e);
       if (details && Object.keys(details).length > 0) {
@@ -177,7 +215,19 @@ export default function AdminProfessionals() {
     try {
       await updateProfessionalWorkingHours(hoursTarget.id, hoursTarget.workingHours);
       setHoursTarget(null);
-      refresh();
+      // Pequeno delay para garantir que o backend processou
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Remove COMPLETAMENTE todas as queries relacionadas
+      queryClient.removeQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === 'string' && (
+          key.includes('professional') ||
+          key.includes('Professional') ||
+          key.includes('team') ||
+          key.includes('Team')
+        );
+      }});
+      await refetch();
     } catch (e: unknown) {
       showApiErrorToast(e, 'Não foi possível salvar os horários');
     }
@@ -193,7 +243,19 @@ export default function AdminProfessionals() {
     try {
       if (p.isActive === false) await reactivateProfessional(p.id);
       else await deactivateProfessional(p.id);
-      refresh();
+      // Pequeno delay para garantir que o backend processou
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // Remove COMPLETAMENTE todas as queries relacionadas
+      queryClient.removeQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === 'string' && (
+          key.includes('professional') ||
+          key.includes('Professional') ||
+          key.includes('team') ||
+          key.includes('Team')
+        );
+      }});
+      await refetch();
     } catch (e: unknown) {
       showApiErrorToast(e, 'Não foi possível alterar o status');
     }
@@ -206,6 +268,7 @@ export default function AdminProfessionals() {
         <button
           onClick={() => {
             setFieldErrors({});
+            setSpecialtySearch('');
             setEditing({ ...empty });
           }}
           className="btn-gold !py-2 !text-sm inline-flex items-center gap-2"
@@ -214,12 +277,25 @@ export default function AdminProfessionals() {
         </button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+          <p className="text-red-800 font-medium">⚠️ Sem conexão com servidor</p>
+          <p className="text-red-600 text-sm mt-1">{error}</p>
+          <button
+            onClick={() => refresh()}
+            className="text-red-700 text-sm font-medium mt-2 hover:underline"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="animate-spin text-gold" />
         </div>
       ) : error ? (
-        <p className="text-destructive text-center py-12">{error}</p>
+        <p className="text-muted-foreground text-center py-12">Carregando últimos dados...</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((p) => (
@@ -265,6 +341,7 @@ export default function AdminProfessionals() {
                 <button
                   onClick={() => {
                     setFieldErrors({});
+                    setSpecialtySearch('');
                     setEditing({
                       id: p.id,
                       name: p.name,
@@ -308,6 +385,7 @@ export default function AdminProfessionals() {
         <Modal
           onClose={() => {
             setFieldErrors({});
+            setSpecialtySearch('');
             setEditing(null);
           }}
           title={editing.id ? 'Editar profissional' : 'Novo profissional'}
@@ -392,34 +470,47 @@ export default function AdminProfessionals() {
             </div>
 
             <Field label="Especialidades (Obrigatório)" error={fieldErrors.specialties}>
+              <input
+                type="text"
+                className="inp mb-3 text-xs"
+                placeholder="Buscar por nome do procedimento..."
+                value={specialtySearch}
+                onChange={(e) => setSpecialtySearch(e.target.value)}
+              />
               <div className="flex flex-wrap gap-2 mt-1">
-                {Array.from(new Set(proceduresList.map(p => p.category))).map(cat => {
-                  const selected = editing.specialties.split(',').map(s => s.trim()).includes(cat);
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => {
-                        const current = editing.specialties.split(',').map(s => s.trim()).filter(Boolean);
-                        let next;
-                        if (current.includes(cat)) {
-                          next = current.filter(c => c !== cat);
-                        } else {
-                          next = [...current, cat];
-                        }
-                        setFieldErrors(p => { const n = {...p}; delete n.specialties; return n; });
-                        setEditing({ ...editing, specialties: next.join(', ') });
-                      }}
-                      className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                        selected 
-                          ? 'bg-gold text-primary border-gold font-bold shadow-sm' 
-                          : 'bg-background text-muted-foreground border-border hover:border-gold/50'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
+                {(() => {
+                  const filteredProcs = specialtySearch
+                    ? proceduresList.filter(p => p.name.toLowerCase().includes(specialtySearch.toLowerCase()))
+                    : proceduresList.slice(0, 5);
+
+                  return filteredProcs.map(proc => {
+                    const selected = editing.specialties.split(',').map(s => s.trim()).includes(proc.name);
+                    return (
+                      <button
+                        key={proc.id}
+                        type="button"
+                        onClick={() => {
+                          const current = editing.specialties.split(',').map(s => s.trim()).filter(Boolean);
+                          let next;
+                          if (current.includes(proc.name)) {
+                            next = current.filter(c => c !== proc.name);
+                          } else {
+                            next = [...current, proc.name];
+                          }
+                          setFieldErrors(p => { const n = {...p}; delete n.specialties; return n; });
+                          setEditing({ ...editing, specialties: next.join(', ') });
+                        }}
+                        className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                          selected
+                            ? 'bg-gold text-primary border-gold font-bold shadow-sm'
+                            : 'bg-background text-muted-foreground border-border hover:border-gold/50'
+                        }`}
+                      >
+                        {proc.name}
+                      </button>
+                    );
+                  });
+                })()}
               </div>
               {proceduresList.length === 0 && (
                 <p className="text-xs text-muted-foreground italic">Nenhum procedimento cadastrado ainda.</p>
@@ -555,6 +646,7 @@ export default function AdminProfessionals() {
               <button
                 onClick={() => {
                   setFieldErrors({});
+                  setSpecialtySearch('');
                   setEditing(null);
                 }}
                 className="px-4 py-2 text-sm rounded-lg border"
@@ -632,6 +724,11 @@ export default function AdminProfessionals() {
                       className="inp w-24 !py-1 !text-xs text-center"
                       value={b.lunchEnd || ''}
                       onChange={(e) => updateTargetBlock(i, { lunchEnd: e.target.value })}
+                      onBlur={() => {
+                        if (b.endTime && (b.lunchEnd || !b.lunchStart)) {
+                          setTimeout(() => setHoursTarget(null), 300);
+                        }
+                      }}
                     />
                   </div>
                 </div>

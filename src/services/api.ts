@@ -102,6 +102,7 @@ async function request<T>(
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     credentials: "include",
     signal: opts.signal,
+    cache: "no-store", // Evita cache do Next.js/browser para garantir dados sempre frescos
   });
 
   if (res.status === 401 && retry && opts.auth !== false) {

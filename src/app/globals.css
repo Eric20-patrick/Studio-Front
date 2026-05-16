@@ -169,4 +169,13 @@
   .container-salon {
     @apply max-w-7xl mx-auto;
   }
+
+  /* Esconde scrollbar mantendo o scroll funcional */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

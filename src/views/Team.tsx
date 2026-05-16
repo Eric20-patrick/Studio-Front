@@ -1,24 +1,33 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Professional } from "@/types";
 import { getProfessionals } from "@/services/professionalService";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Clock, User } from "lucide-react";
-import { formatWorkingHours } from "@/utils";
 import heroImg from "../assets/hero-salon.jpg";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function TeamPage() {
-  const [team, setTeam] = useState<Professional[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const ref = useScrollReveal();
 
   useEffect(() => {
     document.title = "Nossa Equipe | Studio Neo";
-    getProfessionals()
-      .then((data) => setTeam(data))
-      .catch(() => setTeam([]))
-      .finally(() => setLoading(false));
   }, []);
+
+  const { data: team = [], isLoading: loading } = useQuery({
+    queryKey: ['teamProfessionals'],
+    queryFn: () => getProfessionals().catch(() => [] as Professional[]),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
 
   // Group by first specialty (each pro has an array)
   const allSpecialties = Array.from(
@@ -26,6 +35,11 @@ export default function TeamPage() {
       team.flatMap((p) => p.specialties || (p.specialty ? [p.specialty] : [])),
     ),
   );
+
+  const MAX_DESCRIPTION_LENGTH = 120;
+  const shouldTruncate = (text: string) => text.length > MAX_DESCRIPTION_LENGTH;
+  const truncateText = (text: string) =>
+    shouldTruncate(text) ? text.substring(0, MAX_DESCRIPTION_LENGTH) + '...' : text;
 
   return (
     <div>
@@ -70,14 +84,14 @@ export default function TeamPage() {
                     .map((prof) => (
                       <div
                         key={prof.id}
-                        className="card-salon p-6 flex flex-col items-center text-center  bg-white border-none shadow-xl"
+                        className="card-salon p-6 flex flex-col items-center text-center bg-white border-none shadow-xl"
                       >
-                        <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4 overflow-hidden bg-zinc-500 ">
+                        <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4 overflow-hidden bg-zinc-500">
                           {prof.avatarUrl ? (
                             <img
                               src={prof.avatarUrl}
                               alt={prof.name}
-                              className="w-full h-full object-cover "
+                              className="w-full h-full object-cover"
                             />
                           ) : (
                             <User size={32} className="text-muted-foreground" />
@@ -86,15 +100,20 @@ export default function TeamPage() {
                         <h3 className="font-display font-bold text-black font-bold">
                           {prof.name}
                         </h3>
-                        {prof.bio && !prof.description && (
-                          <p className="text-xs text-muted-foreground mb-3 leading-relaxed text-black">
-                            {prof.bio}
-                          </p>
-                        )}
-                        {prof.description && (
-                          <p className="text-xs text-muted-foreground mb-3 leading-relaxed text-black mt-2">
-                            {prof.description}
-                          </p>
+                        {(prof.bio || prof.description) && (
+                          <div className="flex flex-col items-center gap-2 mt-2 w-full">
+                            <p className="text-xs text-muted-foreground leading-relaxed text-black">
+                              {truncateText(prof.description || prof.bio || '')}
+                            </p>
+                            {shouldTruncate(prof.description || prof.bio || '') && (
+                              <button
+                                onClick={() => setSelectedProfessional(prof)}
+                                className="text-xs text-gold font-bold hover:underline"
+                              >
+                                Ler mais →
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     ))}
@@ -104,6 +123,67 @@ export default function TeamPage() {
           )}
         </div>
       </section>
+
+      <Dialog
+        open={selectedProfessional !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProfessional(null);
+        }}
+      >
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden sm:rounded-lg">
+          {selectedProfessional && (
+            <div className="flex flex-col h-full">
+              <DialogHeader className="flex-shrink-0 pb-4">
+                <div className="flex justify-center mb-4">
+                  <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center overflow-hidden bg-zinc-500">
+                    {selectedProfessional.avatarUrl ? (
+                      <img
+                        src={selectedProfessional.avatarUrl}
+                        alt={selectedProfessional.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User size={48} className="text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+                <DialogTitle className="font-display text-center">
+                  {selectedProfessional.name}
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="space-y-4 h-full overflow-y-auto pr-4">
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Especialidades
+                    </p>
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {(selectedProfessional.specialties || []).map((spec) => (
+                        <span
+                          key={spec}
+                          className="px-2 py-1 bg-gold/10 text-gold-dark text-xs rounded-full border border-gold/20"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      Sobre
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed text-black whitespace-pre-wrap">
+                      {selectedProfessional.description || selectedProfessional.bio || 'Sem descrição disponível'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
