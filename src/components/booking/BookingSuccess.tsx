@@ -12,7 +12,7 @@ export default function BookingSuccess() {
       <div>
         <h3 className="text-xl font-display font-bold mb-2">Solicitação enviada com sucesso! 💛</h3>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-          Sua solicitação foi enviada para o salão. Em breve você irá receber a confirmação do seu procedimento via WhatsApp.
+          Sua solicitação foi enviada para o salão. Em breve você irá receber a confirmação do seu procedimento via E-mail.
         </p>
       </div>
       <button
