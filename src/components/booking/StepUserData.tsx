@@ -41,13 +41,15 @@ export default function StepUserData() {
         clientPhone: phoneDigits,
         clientEmail: state.form.email.trim(),
         observations: state.form.observations.trim() || undefined,
-        items: state.form.items.map((it) => ({
-          procedureId: it.procedure.id,
-          professionalId: it.noPreference ? undefined : it.professionalId,
-          date: it.date,
-          period: it.period,
-          startTime: it.startTime,
-        })),
+        items: state.form.items
+          .filter((it) => it.startTime) // Apenas itens com horário selecionado
+          .map((it) => ({
+            procedureId: it.procedure.id,
+            professionalId: it.noPreference ? undefined : it.professionalId,
+            date: it.date,
+            period: it.period,
+            startTime: it.startTime,
+          })),
         marketingConsent: state.form.marketingConsent,
       });
       dispatch({ type: "SET_SUCCESS" });
@@ -73,37 +75,27 @@ export default function StepUserData() {
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="bg-muted rounded-xl p-4 space-y-2 text-sm">
         <h4 className="font-display font-bold mb-3">Resumo do Agendamento</h4>
-        {state.form.items.map((it) => (
-          <div
-            key={it.procedure.id}
-            className="border-b border-border/50 last:border-0 pb-2 last:pb-0"
-          >
-            <p className="font-medium">{it.procedure.name}</p>
-            <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
-              <span>📅 {formatDate(it.date)}</span>
-              {it.startTime ? (
-                <span>• ⏰ {formatTimeFromIso(it.startTime)}</span>
-              ) : (
-                <span className="inline-flex items-center gap-0.5 text-destructive font-medium">
-                  <XCircle size={12} aria-hidden />
-                  Horário não escolhido
-                </span>
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              {it.noPreference ? (
-                <span>💇 Sem preferência</span>
-              ) : it.professionalName ? (
-                <span>💇 {it.professionalName}</span>
-              ) : (
-                <span className="inline-flex items-center gap-0.5 text-destructive font-medium">
-                  <XCircle size={12} aria-hidden />
-                  Profissional não definido
-                </span>
-              )}
-            </p>
-          </div>
-        ))}
+        {state.form.items
+          .filter((it) => it.startTime) // Apenas itens com horário selecionado
+          .map((it) => (
+            <div
+              key={it.procedure.id}
+              className="border-b border-border/50 last:border-0 pb-2 last:pb-0"
+            >
+              <p className="font-medium">{it.procedure.name}</p>
+              <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1">
+                <span>📅 {formatDate(it.date)}</span>
+                <span>• ⏰ {formatTimeFromIso(it.startTime!)}</span>
+              </p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                {it.noPreference ? (
+                  <span>💇 Sem preferência</span>
+                ) : it.professionalName ? (
+                  <span>💇 {it.professionalName}</span>
+                ) : null}
+              </p>
+            </div>
+          ))}
       </div>
 
       <div className="flex flex-col gap-4">

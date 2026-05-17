@@ -91,21 +91,13 @@ export default function StepDateTime() {
   useEffect(() => {
     if (!selectedDate || !selectedPeriod) return;
 
-    // Verificar se TODOS os procedimentos têm pelo menos um profissional disponível
-    const hasAvailability = state.form.procedures.every((proc) => {
-      const profs = slotsByProc[proc.id] || [];
-      return profs.some(
-        (p) => filterSlotsByPeriod(p.slots).length > 0,
-      );
-    });
-
-    if (!hasAvailability) {
-      dispatch({ type: "SET_ITEMS", payload: [] });
-      return;
-    }
-
     const items: BookingItemSelection[] = state.form.procedures.map((proc) => {
       const sel = selections[proc.id];
+      const profs = slotsByProc[proc.id] || [];
+      const hasAvailability = profs.some(
+        (p) => filterSlotsByPeriod(p.slots).length > 0,
+      );
+
       return {
         procedure: proc,
         date: toIsoDate(selectedDate),
@@ -115,6 +107,7 @@ export default function StepDateTime() {
         noPreference: !sel,
         startTime: sel?.startTime,
         endTime: sel?.endTime,
+        hasAvailability,
       };
     });
 
@@ -238,23 +231,7 @@ export default function StepDateTime() {
             </div>
           ) : (
             <div className="space-y-4">
-              {(() => {
-                const hasAnyAvailability = state.form.procedures.every((proc) => {
-                  const profs = slotsByProc[proc.id] || [];
-                  return profs.some((p) => filterSlotsByPeriod(p.slots).length > 0);
-                });
-
-                if (!hasAnyAvailability) {
-                  return (
-                    <div className="py-6 text-center border border-destructive border-dashed rounded-lg bg-destructive/5">
-                      <p className="text-sm font-medium text-destructive">
-                        Não há profissionais disponíveis para a data selecionada. Escolha outra data ou período.
-                      </p>
-                    </div>
-                  );
-                }
-
-                return state.form.procedures.map((proc) => {
+              {state.form.procedures.map((proc) => {
                   const profs = slotsByProc[proc.id] || [];
                   const sel = selections[proc.id];
                   const availableProfs = profs.filter(
@@ -264,18 +241,27 @@ export default function StepDateTime() {
                   return (
                     <div
                       key={proc.id}
-                      className="bg-muted/30 border border-border rounded-2xl p-4"
+                      className={`border rounded-2xl p-4 transition-all ${
+                        availableProfs.length === 0
+                          ? "bg-destructive/5 border-destructive/30"
+                          : "bg-muted/30 border-border"
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-bold text-sm text-foreground">
                           {proc.name}
                         </h4>
+                        {availableProfs.length === 0 && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-destructive/20 text-destructive text-[10px] font-bold uppercase">
+                            Indisponível
+                          </span>
+                        )}
                       </div>
 
                       {availableProfs.length === 0 ? (
-                        <div className="py-4 text-center border border-dashed border-border rounded-lg bg-background/50">
-                          <p className="text-xs text-muted-foreground">
-                            Sem horários para este período.
+                        <div className="py-4 text-center border border-dashed border-destructive/30 rounded-lg bg-destructive/10">
+                          <p className="text-xs text-destructive font-medium">
+                            Sem horários disponíveis para este período.
                           </p>
                         </div>
                       ) : (
@@ -323,8 +309,7 @@ export default function StepDateTime() {
                       )}
                     </div>
                   );
-                });
-              })()}
+                })}
             </div>
           )}
         </section>

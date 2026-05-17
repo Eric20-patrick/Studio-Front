@@ -55,7 +55,10 @@
       "Read(//c/c/Users/Eric/Documents/Studio-api/src/modules/booking/**)",
       "Read(//c/c/Users/Eric/Documents/Studio-api/src/modules/notification/**)",
       "Bash(cd '/c/Users/Eric/Documents/Studio-api' && grep -E \"@@index\" src/prisma/schema.prisma | head -15 && echo \"---PRISMA---\" && cat src/lib/prisma.ts 2>&1 | head -25)",
-      "Read(//c/c/Users/Eric/Documents/Studio-api/src/prisma/**)"
+      "Read(//c/c/Users/Eric/Documents/Studio-api/src/prisma/**)",
+      "Bash(git checkout *)",
+      "Bash(rm -f src/app/sitemap.ts src/app/robots.ts src/components/seo/StructuredData.tsx)",
+      "Bash(rmdir src/components/seo)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Eric\\Documents\\Projetos para venda\\Studio-Front"

@@ -50,14 +50,18 @@ export default function BookingModal() {
     setValidationError("");
 
     if (state.currentStep === 2) {
-      const allSelected =
-        state.form.items.length > 0 &&
-        state.form.items.every((i) => !!i.startTime && !i.noPreference);
+      // Validar apenas procedimentos com disponibilidade
+      const itemsWithAvailability = state.form.items.filter((i) => i.hasAvailability !== false);
+      const allAvailableSelected =
+        itemsWithAvailability.length > 0 &&
+        itemsWithAvailability.every((i) => !!i.startTime && !i.noPreference);
 
-      if (!allSelected) {
-        setValidationError(
-          "Por favor, selecione o profissional e o horário para todos os procedimentos.",
-        );
+      if (!allAvailableSelected) {
+        const unavailableCount = state.form.items.filter((i) => i.hasAvailability === false).length;
+        const message = unavailableCount > 0
+          ? `Por favor, selecione o profissional e o horário para todos os procedimentos disponíveis. ${unavailableCount} procedimento(s) sem horários.`
+          : "Por favor, selecione o profissional e o horário para todos os procedimentos.";
+        setValidationError(message);
         return;
       }
     }

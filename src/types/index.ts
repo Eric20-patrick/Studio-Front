@@ -85,6 +85,7 @@ export interface BookingItemSelection {
   period: Period;
   startTime?: string; // ISO
   endTime?: string;
+  hasAvailability?: boolean; // Indica se há profissionais disponíveis para este procedimento
 }
 
 export interface BookingForm {
