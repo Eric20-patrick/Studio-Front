@@ -25,3 +25,5 @@ dist-ssr
 .env
 playwright.config.ts
 dist
+.vercel
+.env.production

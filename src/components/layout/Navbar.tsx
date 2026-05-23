@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_LINKS, SALON_INFO } from "@/constants";
 import { Menu, X } from "lucide-react";
 
-export default function Navbar() {
+function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
@@ -111,3 +111,5 @@ export default function Navbar() {
     </>
   );
 }
+
+export default memo(Navbar);

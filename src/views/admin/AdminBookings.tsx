@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   listBookings,
@@ -6,9 +6,10 @@ import {
   cancelBooking,
   completeBooking,
 } from '@/services/bookingService';
+import { STALE_TIME_BOOKINGS } from '@/constants/queryCache';
 import { Booking, BookingStatus, Professional } from '@/types';
 import { getProfessionals } from '@/services/professionalService';
-import { Loader2, Check, X, CheckCheck, MessageCircle, RefreshCw, Search } from 'lucide-react';
+import { Loader2, Check, X, MessageCircle, RefreshCw, Search } from 'lucide-react';
 import { formatTimeFromIso, formatCurrency } from '@/utils';
 import {
   getFieldErrorsFromUnknown,
@@ -39,9 +40,12 @@ export default function AdminBookings() {
   const [finishTarget, setFinishTarget] = useState<string | null>(null);
 
   useEffect(() => {
-    getProfessionals().then(setProfessionals).catch(() => {});
+    getProfessionals()
+      .then(setProfessionals)
+      .catch(() => {});
     document.title = 'Agendamentos | Studio Neo';
   }, []);
+
   const params = {
     page,
     limit: 20,
@@ -51,20 +55,25 @@ export default function AdminBookings() {
     search: searchClient || undefined,
   };
 
-  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+  const {
+    data: queryData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
     queryKey: ['adminBookings', params],
-    queryFn: async () => {
+    queryFn: async (): Promise<{ data: Booking[]; meta: { totalPages: number } }> => {
       const res: any = await listBookings(params);
-      if (Array.isArray(res)) return { data: res, meta: { totalPages: 1 } };
-      return { data: res.data || [], meta: res.meta || { totalPages: 1 } };
+      if (Array.isArray(res)) return { data: res as Booking[], meta: { totalPages: 1 } };
+      return { data: (res.data || []) as Booking[], meta: res.meta || { totalPages: 1 } };
     },
-    staleTime: 30 * 1000,
+    staleTime: STALE_TIME_BOOKINGS,
   });
 
   const error = queryError ? (queryError as Error).message : '';
   const bookingsList = queryData?.data || [];
   const meta = queryData?.meta || { totalPages: 1 };
-  
+
   const refresh = refetch;
 
   const doAction = async (fn: () => Promise<unknown>, id: string) => {
@@ -80,16 +89,23 @@ export default function AdminBookings() {
   };
 
   const handleComplete = async (
-    extraProcedureId?: string, 
-    extraProfessionalId?: string, 
+    extraProcedureId?: string,
+    extraProfessionalId?: string,
     discountPercentage?: number,
     extraProcedures?: { procedureId: string; professionalId?: string }[],
-    paymentMethod?: string
+    paymentMethod?: string,
   ) => {
     if (!finishTarget) return;
     setActionId(finishTarget);
     try {
-      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures, paymentMethod);
+      await completeBooking(
+        finishTarget,
+        extraProcedureId,
+        extraProfessionalId,
+        discountPercentage,
+        extraProcedures,
+        paymentMethod,
+      );
       setFinishTarget(null);
       refresh();
     } catch (e: unknown) {
@@ -103,7 +119,10 @@ export default function AdminBookings() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-display font-bold text-black">Agendamentos</h1>
-        <button onClick={refresh} className="p-2 hover:bg-muted rounded-full transition-colors">
+        <button
+          onClick={() => refresh()}
+          className="p-2 hover:bg-muted rounded-full transition-colors"
+        >
           <RefreshCw size={20} className={loading ? 'animate-spin text-gold' : ''} />
         </button>
       </div>
@@ -127,12 +146,17 @@ export default function AdminBookings() {
             </button>
           ))}
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
           <div className="flex flex-col gap-1.5">
-            <label className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">Buscar Cliente</label>
+            <label className="text-muted-foreground text-xs font-bold uppercase tracking-tighter">
+              Buscar Cliente
+            </label>
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
               <input
                 type="text"
                 placeholder="Digite o nome..."
@@ -145,12 +169,24 @@ export default function AdminBookings() {
               />
             </div>
           </div>
-          
+
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="admin-booking-prof" className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between">
+            <label
+              htmlFor="admin-booking-prof"
+              className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between"
+            >
               Profissional
               {filterProfessionalId && (
-                <button type="button" onClick={() => { setFilterProfessionalId(''); setPage(1); }} className="text-[10px] text-gold-dark hover:underline lowercase font-medium">limpar</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterProfessionalId('');
+                    setPage(1);
+                  }}
+                  className="text-[10px] text-gold-dark hover:underline lowercase font-medium"
+                >
+                  limpar
+                </button>
               )}
             </label>
             <select
@@ -172,10 +208,22 @@ export default function AdminBookings() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="admin-booking-date" className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between">
+            <label
+              htmlFor="admin-booking-date"
+              className="text-muted-foreground text-xs font-bold uppercase tracking-tighter flex justify-between"
+            >
               Dia do atendimento
               {filterDate && (
-                <button type="button" onClick={() => { setFilterDate(''); setPage(1); }} className="text-[10px] text-gold-dark hover:underline lowercase font-medium">limpar</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterDate('');
+                    setPage(1);
+                  }}
+                  className="text-[10px] text-gold-dark hover:underline lowercase font-medium"
+                >
+                  limpar
+                </button>
               )}
             </label>
             <input
@@ -200,7 +248,7 @@ export default function AdminBookings() {
         <div className="text-center py-12">
           <p className="text-destructive mb-2 font-medium">{error}</p>
           <button
-            onClick={refresh}
+            onClick={() => refresh()}
             className="text-sm underline text-muted-foreground hover:text-black"
           >
             Tentar novamente
@@ -219,7 +267,7 @@ export default function AdminBookings() {
                 b={b}
                 actionId={actionId}
                 onConfirm={() => doAction(() => confirmBooking(b.id), b.id)}
-                onComplete={() => setFinishTarget(b.id)}
+                onComplete={() => setFinishTarget(b.id)} // 👈 Corrigido: repassando a ação do modal de conclusão
                 onCancel={() => {
                   setCancelFormError('');
                   setCancelReason('');
@@ -346,7 +394,7 @@ interface BookingRowProps {
   b: Booking;
   actionId: string | null;
   onConfirm: () => void;
-  onComplete: () => void;
+  onComplete: () => void; // 👈 Mapeado corretamente na interface
   onCancel: () => void;
 }
 
@@ -358,7 +406,6 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRow
   });
   const allowComplete = !!firstStart && bookingCalendarDaySp(firstStart) === todaySp;
 
-  // Mesmo instante que o e-mail (Intl em America/Sao_Paulo), não a parte da data em UTC
   const formatAdminDate = (isoString: string) => {
     if (!isoString) return '--/--/----';
     try {
@@ -431,7 +478,6 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRow
               </p>
             </div>
             <div className="text-right">
-              {/* Aqui está a exibição corrigida que não muda o dia */}
               <p className="font-medium">{formatAdminDate(it.startTime)}</p>
               <p className="font-black text-gold-dark text-[13px]">
                 {formatTimeFromIso(it.startTime)}
@@ -441,8 +487,14 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRow
         ))}
         {b.status === 'COMPLETED' && (
           <div className="mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
-            <p className="mb-0.5"><span className="font-semibold text-black">Forma de Pagamento:</span> {b.paymentMethod || 'Não informado'}</p>
-            <p><span className="font-semibold text-black">Concluído em:</span> {b.completedAt ? new Date(b.completedAt).toLocaleString('pt-BR') : 'Não informado'}</p>
+            <p className="mb-0.5">
+              <span className="font-semibold text-black">Forma de Pagamento:</span>{' '}
+              {b.paymentMethod || 'Não informado'}
+            </p>
+            <p>
+              <span className="font-semibold text-black">Concluído em:</span>{' '}
+              {b.completedAt ? new Date(b.completedAt).toLocaleString('pt-BR') : 'Não informado'}
+            </p>
           </div>
         )}
       </div>
@@ -486,6 +538,17 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRow
 
           {b.status === 'CONFIRMED' && (
             <>
+              {/* 🚀 Corrigido: Agora sim o allowComplete exibe e usa o onComplete de verdade! */}
+              {allowComplete && (
+                <button
+                  disabled={actionId === b.id}
+                  onClick={onComplete}
+                  title="Concluir Atendimento"
+                  className="px-3 py-2 bg-gold hover:bg-gold-dark text-black font-bold text-xs rounded-lg shadow transition-all active:scale-95 disabled:opacity-50"
+                >
+                  Concluir
+                </button>
+              )}
               <button
                 disabled={actionId === b.id}
                 onClick={onCancel}

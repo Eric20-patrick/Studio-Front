@@ -58,7 +58,15 @@
       "Read(//c/c/Users/Eric/Documents/Studio-api/src/prisma/**)",
       "Bash(git checkout *)",
       "Bash(rm -f src/app/sitemap.ts src/app/robots.ts src/components/seo/StructuredData.tsx)",
-      "Bash(rmdir src/components/seo)"
+      "Bash(rmdir src/components/seo)",
+      "Bash(cd /d \"c:\\\\Users\\\\Eric\\\\Desktop\\\\Studio-Front\")",
+      "Bash(Get-ChildItem -Recurse -File)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\({multer:p.dependencies.multer, 'file-type':p.dependencies['file-type'], sharp:p.dependencies.sharp, 'sanitize-filename':p.dependencies['sanitize-filename']}\\)\")",
+      "Bash(npm uninstall *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Eric\\\\Desktop\\\\Studio-Front\" -Force)",
+      "Bash(Select-Object Name, FullName)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Eric\\Documents\\Projetos para venda\\Studio-Front"

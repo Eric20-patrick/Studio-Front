@@ -4,6 +4,7 @@ import { useBooking } from "@/hooks/useBooking";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Procedure } from "@/types";
 import { getProcedures } from "@/services/procedureService";
+import { STALE_TIME_PUBLIC_DATA } from "@/constants/queryCache";
 import { Clock, Calendar, Sparkles, ArrowRight } from "lucide-react";
 import { formatDuration } from "@/utils";
 import { assetSrc } from "@/lib/assetSrc";
@@ -39,9 +40,7 @@ export default function ServicesPage() {
   const { data: procedures = [] } = useQuery({
     queryKey: ['publicProcedures'],
     queryFn: () => getProcedures().catch(() => [] as Procedure[]),
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: STALE_TIME_PUBLIC_DATA,
   });
 
   const handleOpenBooking = (proc: Procedure) => {

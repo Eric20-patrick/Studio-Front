@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getReceptionDashboard, ReceptionDashboardData } from '@/services/dashboardService';
-import { confirmBooking, cancelBooking, completeBooking, markPresentBooking } from '@/services/bookingService';
+import { STALE_TIME_REALTIME } from '@/constants/queryCache';
+import {
+  confirmBooking,
+  cancelBooking,
+  completeBooking,
+  markPresentBooking,
+} from '@/services/bookingService';
 import { getProfessionals } from '@/services/professionalService';
 import { Professional } from '@/types';
 import { Loader2, MessageCircle, Check, X, CheckCheck, RefreshCw } from 'lucide-react';
@@ -26,7 +32,9 @@ export default function ReceptionDashboard() {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
 
   useEffect(() => {
-    getProfessionals().then(setProfessionals).catch(() => {});
+    getProfessionals()
+      .then(setProfessionals)
+      .catch(() => {});
   }, []);
 
   const [date, setDate] = useState(() => localCalendarToday());
@@ -52,12 +60,17 @@ export default function ReceptionDashboard() {
     procedureId: procedureId || undefined,
   };
 
-  const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
+  const {
+    data: queryData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
     queryKey: ['receptionDashboard', params],
     queryFn: async () => {
       return await getReceptionDashboard(params);
     },
-    staleTime: 30 * 1000,
+    staleTime: STALE_TIME_REALTIME,
     enabled: !!date,
   });
 
@@ -82,10 +95,11 @@ export default function ReceptionDashboard() {
     if (!data?.bookings) return [];
     if (!searchClient.trim()) return data.bookings;
     const lowerSearch = searchClient.toLowerCase();
-    return data.bookings.filter((b) =>
-      b.client.name.toLowerCase().includes(lowerSearch) &&
-      b.status !== 'COMPLETED' &&
-      b.status !== 'CANCELLED'
+    return data.bookings.filter(
+      (b) =>
+        b.client.name.toLowerCase().includes(lowerSearch) &&
+        b.status !== 'COMPLETED' &&
+        b.status !== 'CANCELLED',
     );
   }, [data, searchClient]);
 
@@ -127,16 +141,23 @@ export default function ReceptionDashboard() {
   };
 
   const handleComplete = async (
-    extraProcedureId?: string, 
-    extraProfessionalId?: string, 
+    extraProcedureId?: string,
+    extraProfessionalId?: string,
     discountPercentage?: number,
     extraProcedures?: { procedureId: string; professionalId?: string }[],
-    paymentMethod?: string
+    paymentMethod?: string,
   ) => {
     if (!finishTarget) return;
     setActionId(finishTarget);
     try {
-      await completeBooking(finishTarget, extraProcedureId, extraProfessionalId, discountPercentage, extraProcedures, paymentMethod);
+      await completeBooking(
+        finishTarget,
+        extraProcedureId,
+        extraProfessionalId,
+        discountPercentage,
+        extraProcedures,
+        paymentMethod,
+      );
       setFinishTarget(null);
       refresh();
     } catch (e: unknown) {
@@ -172,7 +193,6 @@ export default function ReceptionDashboard() {
       setActionId(null);
     }
   };
-  
 
   return (
     <div className="space-y-6">
@@ -220,7 +240,7 @@ export default function ReceptionDashboard() {
           </select>
           <button
             type="button"
-            onClick={refresh}
+            onClick={() => refresh()}
             className="p-2 rounded-lg border border-border hover:bg-muted"
             title="Atualizar"
           >
@@ -262,7 +282,7 @@ export default function ReceptionDashboard() {
 
             {filteredBookings.length === 0 ? (
               <p className="text-center text-muted-foreground py-12">
-                {searchClient.trim() ? "Cliente não encontrado" : "Nenhum agendamento encontrado."}
+                {searchClient.trim() ? 'Cliente não encontrado' : 'Nenhum agendamento encontrado.'}
               </p>
             ) : (
               <div className="space-y-3">
@@ -303,7 +323,8 @@ export default function ReceptionDashboard() {
 
                     {b.status === 'PRESENT' && (
                       <div className="mb-3 text-xs rounded-lg border border-gold bg-gold/10 px-3 py-2 text-gold-dark font-medium flex items-center gap-2">
-                        <CheckCheck size={14} /> Cliente presente no salão. Aguardando conclusão do atendimento.
+                        <CheckCheck size={14} /> Cliente presente no salão. Aguardando conclusão do
+                        atendimento.
                       </div>
                     )}
 
@@ -343,13 +364,26 @@ export default function ReceptionDashboard() {
                         </p>
                         {b.discountAmount ? (
                           <p className="text-xs text-red-600 font-medium">
-                            Desconto aplicado: {b.discountPercentage}% (- {b.discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
+                            Desconto aplicado: {b.discountPercentage}% (-{' '}
+                            {b.discountAmount.toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                            })}
+                            )
                           </p>
                         ) : null}
                         {b.status === 'COMPLETED' && (
                           <div className="text-xs text-muted-foreground mt-2 bg-muted/30 p-2 rounded-lg border border-border">
-                            <p><span className="font-semibold text-black">Forma de Pagamento:</span> {b.paymentMethod || 'Não informado'}</p>
-                            <p><span className="font-semibold text-black">Concluído em:</span> {b.completedAt ? new Date(b.completedAt).toLocaleString('pt-BR') : 'Não informado'}</p>
+                            <p>
+                              <span className="font-semibold text-black">Forma de Pagamento:</span>{' '}
+                              {b.paymentMethod || 'Não informado'}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-black">Concluído em:</span>{' '}
+                              {b.completedAt
+                                ? new Date(b.completedAt).toLocaleString('pt-BR')
+                                : 'Não informado'}
+                            </p>
                           </div>
                         )}
                       </div>

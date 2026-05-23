@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminDashboard, AdminDashboardData } from '@/services/dashboardService';
+import { STALE_TIME_REALTIME } from '@/constants/queryCache';
 import { downloadCompletedReport } from '@/services/reportExportService';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -35,13 +36,18 @@ export default function AdminDashboard() {
     document.title = 'Dashboard | Studio Neo Admin';
   }, []);
 
-  const { data: queryData, isLoading: loading, error: queryError } = useQuery({
+  const {
+    data: queryData,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery({
     queryKey: ['adminDashboard', filter],
     queryFn: async () => {
       const res = await getAdminDashboard(filter);
       return ((res as { data?: AdminDashboardData }).data ?? res) as AdminDashboardData;
     },
-    staleTime: 60 * 1000, // 1 minuto de cache
+    staleTime: STALE_TIME_REALTIME,
   });
 
   const error = queryError ? (queryError as Error).message : '';
@@ -96,7 +102,7 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => loadDashboard()}
+            onClick={() => refetch()}
             className="p-2 rounded-lg border border-border hover:bg-muted"
             title="Atualizar"
           >
@@ -195,8 +201,7 @@ export default function AdminDashboard() {
                     {tp.professional?.name || 'Profissional'}
                   </span>
                   <span className="text-xs text-gold-dark font-bold whitespace-nowrap">
-                    {tp.totalAppointments || 0} •{' '}
-                    {tp.totalRevenueFormatted}
+                    {tp.totalAppointments || 0} • {tp.totalRevenueFormatted}
                   </span>
                 </li>
               ))
@@ -283,7 +288,7 @@ export default function AdminDashboard() {
                 lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
                 const pYear = lastMonthDate.getFullYear();
                 const pMonth = lastMonthDate.getMonth() + 1;
-                
+
                 setExpBusy('pdf');
                 downloadCompletedReport({ format: 'pdf', year: pYear, month: pMonth })
                   .catch((e) => showApiErrorToast(e, 'Não foi possível exportar o relatório'))

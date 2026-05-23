@@ -17,9 +17,14 @@ export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 0, // Dados sempre considerados stale por padrão
-        refetchOnMount: 'always', // Sempre faz refetch ao montar componente
-        refetchOnWindowFocus: true, // Refetch quando janela ganha foco
+        // Default conservador: dados ficam fresh por 1 minuto, sem refetch
+        // ao focar a janela. Views que precisam refetch agressivo após
+        // mutações devem usar `queryClient.invalidateQueries()`,
+        // não staleTime: 0 (que causa requisições redundantes).
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        refetchOnMount: true,
+        refetchOnWindowFocus: false,
         retry: (failureCount, error: any) => {
           // Máximo 3 tentativas
           if (failureCount >= 3) return false;

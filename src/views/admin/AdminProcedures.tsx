@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Procedure } from '@/types';
+import { STALE_TIME_ADMIN_DATA } from '@/constants/queryCache';
 import {
   getAdminProcedures,
   createProcedure,
@@ -54,7 +55,7 @@ export default function AdminProcedures() {
     queryFn: async () => {
       return await getAdminProcedures();
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: STALE_TIME_ADMIN_DATA,
   });
 
   const error = queryError ? (queryError as Error).message : '';

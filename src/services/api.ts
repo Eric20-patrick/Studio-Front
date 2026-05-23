@@ -134,6 +134,52 @@ async function request<T>(
   return data as T;
 }
 
+async function uploadRequest<T>(
+  endpoint: string,
+  formData: FormData,
+  method: "POST" | "PATCH" | "PUT" = "POST",
+  retry = true,
+): Promise<T> {
+  const headers: Record<string, string> = {};
+  const tok = getAccessToken();
+  if (tok) headers["Authorization"] = `Bearer ${tok}`;
+
+  const res = await fetch(buildUrl(endpoint, {}), {
+    method,
+    headers,
+    body: formData,
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (res.status === 401 && retry) {
+    const newToken = await refreshAccessToken();
+    if (newToken) return uploadRequest<T>(endpoint, formData, method, false);
+    setAccessToken(null);
+  }
+
+  let data: any = null;
+  const text = await res.text();
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      (data && (data.message || data.error)) || `Erro ${res.status}`;
+    throw new ApiError(message, res.status, data);
+  }
+
+  if (data && typeof data === "object" && "success" in data && "data" in data) {
+    return data.data as T;
+  }
+  return data as T;
+}
+
 export const api = {
   get: <T>(
     endpoint: string,
@@ -158,6 +204,11 @@ export const api = {
     endpoint: string,
     opts: Omit<RequestOptions, "method" | "body"> = {},
   ) => request<T>(endpoint, { ...opts, method: "DELETE" }),
+  upload: <T>(
+    endpoint: string,
+    formData: FormData,
+    method: "POST" | "PATCH" | "PUT" = "POST",
+  ) => uploadRequest<T>(endpoint, formData, method),
   refresh: refreshAccessToken,
 };
 

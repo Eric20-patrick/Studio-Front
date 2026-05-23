@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useBooking } from "@/hooks/useBooking";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -153,6 +153,27 @@ function TestimonialsSection() {
 function GalleryPreview() {
   const ref = useScrollReveal();
   const images = [hero, g1, g2, g4];
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const navigate = useCallback(
+    (dir: number) => {
+      setLightbox((cur) =>
+        cur === null ? cur : (cur + dir + images.length) % images.length
+      );
+    },
+    [images.length]
+  );
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+      else if (e.key === "ArrowLeft") navigate(-1);
+      else if (e.key === "ArrowRight") navigate(1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightbox, navigate]);
 
   return (
     <section className="section-padding bg-[#faf8f5]">
@@ -166,18 +187,22 @@ function GalleryPreview() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {images.map((img, i) => (
-            <Link
-              href="/galeria"
+            <button
+              type="button"
+              onClick={() => setLightbox(i)}
               key={i}
-              className="aspect-square rounded-xl overflow-hidden group cursor-pointer"
+              className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer"
+              aria-label={`Ampliar foto ${i + 1}`}
             >
-              <img
-                src={img.src}
+              <Image
+                src={img}
                 alt="Galeria do Studio Neo"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
+                fill
+                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                placeholder="blur"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-            </Link>
+            </button>
           ))}
         </div>
 
@@ -191,6 +216,57 @@ function GalleryPreview() {
           </Link>
         </div>
       </div>
+
+      {lightbox !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-primary/95 backdrop-blur-md animate-fade-in"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 hover:bg-gold/80 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 hover:scale-110 z-10"
+            onClick={() => setLightbox(null)}
+            aria-label="Fechar"
+          >
+            <X size={22} />
+          </button>
+
+          <button
+            className="absolute left-4 md:left-8 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-gold/80 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 hover:scale-110 z-10 group"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(-1);
+            }}
+            aria-label="Anterior"
+          >
+            <ChevronLeft size={28} className="group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+
+          <div
+            className="relative max-w-[90vw] max-h-[85vh] animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-gold/30 to-gold-dark/30 rounded-2xl blur-lg opacity-50" />
+            <Image
+              src={images[lightbox]!}
+              alt={`Foto ${lightbox + 1}`}
+              sizes="90vw"
+              placeholder="blur"
+              className="relative max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-2xl shadow-2xl"
+            />
+          </div>
+
+          <button
+            className="absolute right-4 md:right-8 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 hover:bg-gold/80 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-300 hover:scale-110 z-10 group"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(1);
+            }}
+            aria-label="Próxima"
+          >
+            <ChevronRight size={28} className="group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
+      )}
     </section>
   );
 }

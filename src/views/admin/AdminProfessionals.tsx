@@ -1,5 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { STALE_TIME_ADMIN_DATA } from '@/constants/queryCache';
 import { Professional, WorkingHourBlock, WeekDay } from '@/types';
 import {
   getProfessionals,
@@ -8,6 +9,9 @@ import {
   updateProfessionalWorkingHours,
   deactivateProfessional,
   reactivateProfessional,
+  uploadProfessionalAvatar,
+  resolveAvatarUrl,
+  AVATAR_UPLOAD_LIMITS,
 } from '@/services/professionalService';
 import { getAdminProcedures } from '@/services/procedureService';
 import {
@@ -61,6 +65,80 @@ const empty: FormState = {
   workingHours: [{ weekDay: 'MONDAY', startTime: '09:00', endTime: '18:00' }],
 };
 
+interface ProfessionalCardProps {
+  professional: Professional;
+  onEdit: (p: Professional) => void;
+  onShowHours: (p: Professional) => void;
+  onToggleActive: (p: Professional) => void;
+}
+
+const ProfessionalCard = memo(function ProfessionalCard({
+  professional: p,
+  onEdit,
+  onShowHours,
+  onToggleActive,
+}: ProfessionalCardProps) {
+  const avatar = resolveAvatarUrl(p.avatarUrl);
+  return (
+    <div className="bg-white border border-border rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border flex-shrink-0 relative">
+          {avatar ? (
+            <Image src={avatar} alt={p.name} fill sizes="48px" className="object-cover" unoptimized />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              <ImageIcon size={20} />
+            </div>
+          )}
+        </div>
+        <div className="overflow-hidden">
+          <p className="font-bold truncate">{p.name}</p>
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${p.isActive === false ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'}`}
+          >
+            {p.isActive === false ? 'INATIVO' : 'ATIVO'}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-1 mb-4">
+        <p className="text-xs text-muted-foreground truncate">{p.email || 'Sem e-mail'}</p>
+        <div className="flex flex-wrap gap-1">
+          {(p.specialties || []).map((s) => (
+            <span
+              key={s}
+              className="text-[9px] px-2 py-0.5 rounded-full bg-gold/10 text-gold-dark border border-gold/20"
+            >
+              {s}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={() => onEdit(p)}
+          className="flex-1 px-2 py-1.5 text-xs rounded-lg border hover:bg-muted inline-flex items-center justify-center gap-1"
+        >
+          <Pencil size={12} /> Editar
+        </button>
+        <button
+          onClick={() => onShowHours(p)}
+          className="flex-1 px-2 py-1.5 text-xs rounded-lg border hover:bg-muted inline-flex items-center justify-center gap-1"
+        >
+          <Clock size={12} /> Horários
+        </button>
+        <button
+          onClick={() => onToggleActive(p)}
+          className={`px-2 py-1.5 text-xs rounded-lg border transition-colors ${p.isActive === false ? 'text-emerald-600 hover:bg-emerald-50' : 'text-destructive hover:bg-destructive/5'}`}
+        >
+          <Power size={12} />
+        </button>
+      </div>
+    </div>
+  );
+});
+
 export default function AdminProfessionals() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<FormState | null>(null);
@@ -71,8 +149,17 @@ export default function AdminProfessionals() {
   } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [specialtySearch, setSpecialtySearch] = useState<string>('');
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [pendingAvatarPreview, setPendingAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    };
+  }, [pendingAvatarPreview]);
 
   useEffect(() => {
     document.title = 'Profissionais | Studio Neo';
@@ -84,9 +171,10 @@ export default function AdminProfessionals() {
       const [profs, procs] = await Promise.all([getProfessionals(), getAdminProcedures()]);
       return { profs, procs };
     },
-    staleTime: 0, // Sempre considera os dados como stale para refetch imediato
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: STALE_TIME_ADMIN_DATA,
+    gcTime: 5 * 60_000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   const error = queryError ? (queryError as Error).message : '';
@@ -94,47 +182,119 @@ export default function AdminProfessionals() {
   const proceduresList = queryData?.procs || [];
   const refresh = refetch;
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && editing) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditing({ ...editing, avatarUrl: reader.result as string });
-        setFieldErrors((prev) => {
-          const next = { ...prev };
-          delete next.avatarUrl;
-          return next;
-        });
-      };
-      reader.readAsDataURL(file);
+  const validateAvatarFile = useCallback(async (file: File): Promise<string | null> => {
+    const allowedMime = AVATAR_UPLOAD_LIMITS.allowedMime as readonly string[];
+    if (!allowedMime.includes(file.type)) {
+      return 'Formato inválido. Use JPG, PNG ou WebP.';
     }
-  };
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const allowedExt = AVATAR_UPLOAD_LIMITS.allowedExtensions as readonly string[];
+    if (!allowedExt.includes(ext)) {
+      return 'Extensão inválida. Use .jpg, .jpeg, .png ou .webp.';
+    }
+    if (file.size > AVATAR_UPLOAD_LIMITS.maxSizeBytes) {
+      const mb = (AVATAR_UPLOAD_LIMITS.maxSizeBytes / 1024 / 1024).toFixed(0);
+      return `Arquivo muito grande. Máximo ${mb}MB.`;
+    }
+    if (file.size === 0) {
+      return 'Arquivo vazio.';
+    }
+
+    const dimensions = await new Promise<{ w: number; h: number } | null>(
+      (resolve) => {
+        const url = URL.createObjectURL(file);
+        const img = new window.Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      }
+    );
+
+    if (!dimensions) return 'Não foi possível ler a imagem.';
+    const { w, h } = dimensions;
+    if (
+      w < AVATAR_UPLOAD_LIMITS.minDimension ||
+      h < AVATAR_UPLOAD_LIMITS.minDimension
+    ) {
+      return `Imagem muito pequena. Mínimo ${AVATAR_UPLOAD_LIMITS.minDimension}x${AVATAR_UPLOAD_LIMITS.minDimension}px.`;
+    }
+    if (
+      w > AVATAR_UPLOAD_LIMITS.maxInputDimension ||
+      h > AVATAR_UPLOAD_LIMITS.maxInputDimension
+    ) {
+      return `Imagem muito grande. Máximo ${AVATAR_UPLOAD_LIMITS.maxInputDimension}x${AVATAR_UPLOAD_LIMITS.maxInputDimension}px.`;
+    }
+    return null;
+  }, []);
+
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !editing) return;
+
+    const errorMsg = await validateAvatarFile(file);
+    if (errorMsg) {
+      setFieldErrors((prev) => ({ ...prev, avatarUrl: errorMsg }));
+      return;
+    }
+
+    if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    const preview = URL.createObjectURL(file);
+    setPendingAvatarFile(file);
+    setPendingAvatarPreview(preview);
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      delete next.avatarUrl;
+      return next;
+    });
+  }, [editing, pendingAvatarPreview, validateAvatarFile]);
 
   // Funções para manipular horários dentro do formulário de criação/edição
-  const addEditingBlock = () => {
-    if (!editing) return;
-    setEditing({
-      ...editing,
-      workingHours: [
-        ...editing.workingHours,
-        { weekDay: 'MONDAY', startTime: '09:00', endTime: '18:00' },
-      ],
-    });
-  };
+  // Usam o updater pattern do setState para evitar dependência em `editing` —
+  // assim os callbacks ficam estáveis e qualquer filho memoizado não re-renderiza.
+  const addEditingBlock = useCallback(() => {
+    setEditing((cur) =>
+      cur
+        ? {
+            ...cur,
+            workingHours: [
+              ...cur.workingHours,
+              { weekDay: 'MONDAY', startTime: '09:00', endTime: '18:00' },
+            ],
+          }
+        : cur
+    );
+  }, []);
 
-  const updateEditingBlock = (i: number, patch: Partial<WorkingHourBlock>) => {
-    if (!editing) return;
-    const wh = editing.workingHours.map((b, idx) => (idx === i ? { ...b, ...patch } : b));
-    setEditing({ ...editing, workingHours: wh });
-  };
+  const updateEditingBlock = useCallback(
+    (i: number, patch: Partial<WorkingHourBlock>) => {
+      setEditing((cur) =>
+        cur
+          ? {
+              ...cur,
+              workingHours: cur.workingHours.map((b, idx) =>
+                idx === i ? { ...b, ...patch } : b
+              ),
+            }
+          : cur
+      );
+    },
+    []
+  );
 
-  const removeEditingBlock = (i: number) => {
-    if (!editing) return;
-    setEditing({
-      ...editing,
-      workingHours: editing.workingHours.filter((_, idx) => idx !== i),
-    });
-  };
+  const removeEditingBlock = useCallback((i: number) => {
+    setEditing((cur) =>
+      cur
+        ? { ...cur, workingHours: cur.workingHours.filter((_, idx) => idx !== i) }
+        : cur
+    );
+  }, []);
 
   const save = async () => {
     if (!editing) return;
@@ -149,13 +309,18 @@ export default function AdminProfessionals() {
         setFieldErrors({ specialties: 'Selecione pelo menos uma especialidade' });
         return;
       }
+      if (!editing.id && !pendingAvatarFile && !editing.avatarUrl) {
+        setFieldErrors({ avatarUrl: 'Foto do profissional é obrigatória' });
+        return;
+      }
 
       const phoneDigits = editing.phone.replace(/\D/g, '');
+      const existingAvatar = editing.avatarUrl.trim();
       const payload = {
         name: editing.name.trim(),
         email: editing.email.trim() || undefined,
         phone: phoneDigits.length ? phoneDigits : undefined,
-        avatarUrl: editing.avatarUrl.trim() || undefined,
+        avatarUrl: existingAvatar || undefined,
         description: editing.description.trim(),
         specialties: editing.specialties
           .split(',')
@@ -165,13 +330,30 @@ export default function AdminProfessionals() {
       };
 
       let success = false;
+      let professionalId = editing.id;
+
       if (editing.id) {
         await updateProfessional(editing.id, payload);
         await updateProfessionalWorkingHours(editing.id, editing.workingHours);
         success = true;
       } else {
-        await createProfessional(payload);
+        const { avatarUrl: _omit, ...createPayload } = payload;
+        if (!pendingAvatarFile) {
+          setFieldErrors({ avatarUrl: 'Foto do profissional é obrigatória' });
+          return;
+        }
+        const created = await createProfessional(createPayload);
+        professionalId = created.id;
         success = true;
+      }
+
+      if (pendingAvatarFile && professionalId) {
+        setUploadingAvatar(true);
+        try {
+          await uploadProfessionalAvatar(professionalId, pendingAvatarFile);
+        } finally {
+          setUploadingAvatar(false);
+        }
       }
 
       if (success) {
@@ -196,6 +378,9 @@ export default function AdminProfessionals() {
 
         setEditing(null);
         setSpecialtySearch('');
+        if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+        setPendingAvatarFile(null);
+        setPendingAvatarPreview(null);
         showValidationToast('Profissional salvo com sucesso!', {});
       }
     } catch (e: unknown) {
@@ -239,13 +424,11 @@ export default function AdminProfessionals() {
     setHoursTarget({ ...hoursTarget, workingHours: wh });
   };
 
-  const toggleActive = async (p: Professional) => {
+  const toggleActive = useCallback(async (p: Professional) => {
     try {
       if (p.isActive === false) await reactivateProfessional(p.id);
       else await deactivateProfessional(p.id);
-      // Pequeno delay para garantir que o backend processou
       await new Promise(resolve => setTimeout(resolve, 200));
-      // Remove COMPLETAMENTE todas as queries relacionadas
       queryClient.removeQueries({ predicate: (query) => {
         const key = query.queryKey[0];
         return typeof key === 'string' && (
@@ -259,18 +442,49 @@ export default function AdminProfessionals() {
     } catch (e: unknown) {
       showApiErrorToast(e, 'Não foi possível alterar o status');
     }
-  };
+  }, [queryClient, refetch]);
+
+  const startEditing = useCallback((p: Professional) => {
+    setFieldErrors({});
+    setSpecialtySearch('');
+    if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    setPendingAvatarFile(null);
+    setPendingAvatarPreview(null);
+    setEditing({
+      id: p.id,
+      name: p.name,
+      email: p.email || '',
+      phone: p.phone || '',
+      specialties: (p.specialties || []).join(', '),
+      description: p.description || '',
+      avatarUrl: p.avatarUrl || '',
+      workingHours: p.workingHours || [],
+    });
+  }, [pendingAvatarPreview]);
+
+  const openHoursModal = useCallback((p: Professional) => {
+    setHoursTarget({
+      id: p.id,
+      name: p.name,
+      workingHours: p.workingHours || [],
+    });
+  }, []);
+
+  const startCreating = useCallback(() => {
+    setFieldErrors({});
+    setSpecialtySearch('');
+    if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    setPendingAvatarFile(null);
+    setPendingAvatarPreview(null);
+    setEditing({ ...empty });
+  }, [pendingAvatarPreview]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl font-display font-bold">Profissionais</h1>
         <button
-          onClick={() => {
-            setFieldErrors({});
-            setSpecialtySearch('');
-            setEditing({ ...empty });
-          }}
+          onClick={startCreating}
           className="btn-gold !py-2 !text-sm inline-flex items-center gap-2"
         >
           <Plus size={14} /> Novo profissional
@@ -299,84 +513,13 @@ export default function AdminProfessionals() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((p) => (
-            <div
+            <ProfessionalCard
               key={p.id}
-              className="bg-white border border-border rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border flex-shrink-0 relative">
-                  {p.avatarUrl ? (
-                    <Image src={p.avatarUrl} alt={p.name} fill sizes="48px" className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      <ImageIcon size={20} />
-                    </div>
-                  )}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="font-bold truncate">{p.name}</p>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${p.isActive === false ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'}`}
-                  >
-                    {p.isActive === false ? 'INATIVO' : 'ATIVO'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-1 mb-4">
-                <p className="text-xs text-muted-foreground truncate">{p.email || 'Sem e-mail'}</p>
-                <div className="flex flex-wrap gap-1">
-                  {(p.specialties || []).map((s) => (
-                    <span
-                      key={s}
-                      className="text-[9px] px-2 py-0.5 rounded-full bg-gold/10 text-gold-dark border border-gold/20"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setFieldErrors({});
-                    setSpecialtySearch('');
-                    setEditing({
-                      id: p.id,
-                      name: p.name,
-                      email: p.email || '',
-                      phone: p.phone || '',
-                      specialties: (p.specialties || []).join(', '),
-                      description: p.description || '',
-                      avatarUrl: p.avatarUrl || '',
-                      workingHours: p.workingHours || [],
-                    });
-                  }}
-                  className="flex-1 px-2 py-1.5 text-xs rounded-lg border hover:bg-muted inline-flex items-center justify-center gap-1"
-                >
-                  <Pencil size={12} /> Editar
-                </button>
-                <button
-                  onClick={() =>
-                    setHoursTarget({
-                      id: p.id,
-                      name: p.name,
-                      workingHours: p.workingHours || [],
-                    })
-                  }
-                  className="flex-1 px-2 py-1.5 text-xs rounded-lg border hover:bg-muted inline-flex items-center justify-center gap-1"
-                >
-                  <Clock size={12} /> Horários
-                </button>
-                <button
-                  onClick={() => toggleActive(p)}
-                  className={`px-2 py-1.5 text-xs rounded-lg border transition-colors ${p.isActive === false ? 'text-emerald-600 hover:bg-emerald-50' : 'text-destructive hover:bg-destructive/5'}`}
-                >
-                  <Power size={12} />
-                </button>
-              </div>
-            </div>
+              professional={p}
+              onEdit={startEditing}
+              onShowHours={openHoursModal}
+              onToggleActive={toggleActive}
+            />
           ))}
         </div>
       )}
@@ -387,17 +530,36 @@ export default function AdminProfessionals() {
             setFieldErrors({});
             setSpecialtySearch('');
             setEditing(null);
+            if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+            setPendingAvatarFile(null);
+            setPendingAvatarPreview(null);
           }}
           title={editing.id ? 'Editar profissional' : 'Novo profissional'}
         >
           <div className="space-y-4 max-h-[80vh] overflow-y-auto px-1 custom-scroll">
-            <div className="flex justify-center mb-4">
+            <div className="flex flex-col items-center mb-4">
               <div
-                onClick={() => fileInputRef.current?.click()}
-                className="w-24 h-24 rounded-full border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-gold transition-colors relative overflow-hidden bg-muted/30"
+                onClick={() => !uploadingAvatar && fileInputRef.current?.click()}
+                className={`w-24 h-24 rounded-full border-2 border-dashed border-border flex flex-col items-center justify-center transition-colors relative overflow-hidden bg-muted/30 ${uploadingAvatar ? 'opacity-60 cursor-wait' : 'cursor-pointer hover:border-gold'}`}
               >
-                {editing.avatarUrl ? (
-                  <Image src={editing.avatarUrl} alt="Avatar" fill sizes="96px" className="object-cover" unoptimized={editing.avatarUrl.startsWith('data:')} />
+                {pendingAvatarPreview ? (
+                  <Image
+                    src={pendingAvatarPreview}
+                    alt="Avatar preview"
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : resolveAvatarUrl(editing.avatarUrl) ? (
+                  <Image
+                    src={resolveAvatarUrl(editing.avatarUrl)!}
+                    alt="Avatar"
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    unoptimized
+                  />
                 ) : (
                   <>
                     <Upload size={20} className="text-muted-foreground mb-1" />
@@ -406,16 +568,25 @@ export default function AdminProfessionals() {
                     </span>
                   </>
                 )}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Loader2 size={20} className="animate-spin text-white" />
+                  </div>
+                )}
                 <input
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileChange}
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   className="hidden"
+                  disabled={uploadingAvatar}
                 />
               </div>
+              <p className="text-[10px] text-muted-foreground text-center mt-2">
+                JPG, PNG ou WebP — máx 2MB
+              </p>
               {fieldErrors.avatarUrl && (
-                <p className="text-xs text-destructive text-center mt-2">{fieldErrors.avatarUrl}</p>
+                <p className="text-xs text-destructive text-center mt-1">{fieldErrors.avatarUrl}</p>
               )}
             </div>
 

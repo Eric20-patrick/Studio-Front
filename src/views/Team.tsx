@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Professional } from "@/types";
-import { getProfessionals } from "@/services/professionalService";
+import { getProfessionals, resolveAvatarUrl } from "@/services/professionalService";
+import { STALE_TIME_PUBLIC_DATA } from "@/constants/queryCache";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { Clock, User } from "lucide-react";
+import { User, Sparkles } from "lucide-react";
 import heroImg from "../assets/hero-salon.jpg";
 import Image from "next/image";
-import { Heart, BookOpen, Sparkles, Award } from "lucide-react";
 
 import {
   Dialog,
@@ -26,9 +26,7 @@ export default function TeamPage() {
   const { data: team = [], isLoading: loading } = useQuery({
     queryKey: ['teamProfessionals'],
     queryFn: () => getProfessionals().catch(() => [] as Professional[]),
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: STALE_TIME_PUBLIC_DATA,
   });
 
   // Group by first specialty (each pro has an array)
@@ -104,11 +102,14 @@ export default function TeamPage() {
                         <div className="relative mb-4">
                           <div className="absolute inset-0 bg-gradient-to-br from-gold to-gold-dark rounded-full blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
                           <div className="relative w-28 h-28 rounded-full bg-zinc-200 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-lg">
-                            {prof.avatarUrl ? (
-                              <img
-                                src={prof.avatarUrl}
+                            {resolveAvatarUrl(prof.avatarUrl) ? (
+                              <Image
+                                src={resolveAvatarUrl(prof.avatarUrl)!}
                                 alt={prof.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                fill
+                                sizes="112px"
+                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                unoptimized
                               />
                             ) : (
                               <User size={40} className="text-muted-foreground" />
@@ -191,11 +192,14 @@ export default function TeamPage() {
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-br from-gold to-gold-dark rounded-full blur-lg opacity-40" />
                       <div className="relative w-32 h-32 rounded-full bg-zinc-200 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-xl">
-                        {selectedProfessional.avatarUrl ? (
-                          <img
-                            src={selectedProfessional.avatarUrl}
+                        {resolveAvatarUrl(selectedProfessional.avatarUrl) ? (
+                          <Image
+                            src={resolveAvatarUrl(selectedProfessional.avatarUrl)!}
                             alt={selectedProfessional.name}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="128px"
+                            className="object-cover"
+                            unoptimized
                           />
                         ) : (
                           <User size={48} className="text-muted-foreground" />

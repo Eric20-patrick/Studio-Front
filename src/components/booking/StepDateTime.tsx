@@ -1,25 +1,14 @@
-import { useEffect, useState, useMemo } from "react";
-import { useBooking } from "@/hooks/useBooking";
-import {
-  Period,
-  AvailabilitySlot,
-  ProfessionalAvailability,
-  BookingItemSelection,
-} from "@/types";
-import { getAvailability } from "@/services/bookingService";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  isWeekday,
-  toIsoDate,
-  formatDate,
-  formatTimeFromIso,
-  getPeriodFromTime,
-} from "@/utils";
-import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useBooking } from '@/hooks/useBooking';
+import { Period, AvailabilitySlot, ProfessionalAvailability, BookingItemSelection } from '@/types';
+import { getAvailability } from '@/services/bookingService';
+import { Calendar } from '@/components/ui/calendar';
+import { isWeekday, toIsoDate, formatDate, formatTimeFromIso, getPeriodFromTime } from '@/utils';
+import { Loader2 } from 'lucide-react';
 
 const PERIODS: { id: Period; label: string; icon: string; hours: string }[] = [
-  { id: "manha", label: "Manhã", icon: "🌅", hours: "08:00 — 11:59" },
-  { id: "tarde", label: "Tarde", icon: "🌇", hours: "12:00 — 23:59" },
+  { id: 'manha', label: 'Manhã', icon: '🌅', hours: '08:00 — 11:59' },
+  { id: 'tarde', label: 'Tarde', icon: '🌇', hours: '12:00 — 23:59' },
 ];
 
 // Ajuste na interface para aceitar arrays de leitura
@@ -35,7 +24,7 @@ export default function StepDateTime() {
   const selectedPeriod = state.form.selectedPeriods[0];
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [, setError] = useState('');
   const [slotsByProc, setSlotsByProc] = useState<SlotByProc>({});
   const [selections, setSelections] = useState<Record<string, any>>({});
 
@@ -56,8 +45,9 @@ export default function StepDateTime() {
       return;
     }
 
+    let cancelled = false;
     setLoading(true);
-    setError("");
+    setError('');
     const dateStr = toIsoDate(selectedDate);
 
     Promise.all(
@@ -67,10 +57,7 @@ export default function StepDateTime() {
             procedureId: proc.id,
             date: dateStr,
           });
-          // Tipagem forçada para evitar erro de 'readonly []'
-          const arr = (
-            Array.isArray(res) ? res : []
-          ) as ProfessionalAvailability[];
+          const arr = (Array.isArray(res) ? res : []) as ProfessionalAvailability[];
           return [proc.id, arr] as const;
         } catch (e) {
           return [proc.id, [] as ProfessionalAvailability[]] as const;
@@ -78,14 +65,23 @@ export default function StepDateTime() {
       }),
     )
       .then((entries) => {
+        if (cancelled) return;
         const map: SlotByProc = {};
         entries.forEach(([id, arr]) => {
           map[id] = arr;
         });
         setSlotsByProc(map);
       })
-      .catch(() => setError("Erro ao carregar horários disponíveis"))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError('Erro ao carregar horários disponíveis');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedDate, state.form.procedures]);
 
   useEffect(() => {
@@ -94,9 +90,7 @@ export default function StepDateTime() {
     const items: BookingItemSelection[] = state.form.procedures.map((proc) => {
       const sel = selections[proc.id];
       const profs = slotsByProc[proc.id] || [];
-      const hasAvailability = profs.some(
-        (p) => filterSlotsByPeriod(p.slots).length > 0,
-      );
+      const hasAvailability = profs.some((p) => filterSlotsByPeriod(p.slots).length > 0);
 
       return {
         procedure: proc,
@@ -111,52 +105,54 @@ export default function StepDateTime() {
       };
     });
 
-    dispatch({ type: "SET_ITEMS", payload: items });
-  }, [
-    selections,
-    selectedDate,
-    selectedPeriod,
-    state.form.procedures,
-    slotsByProc,
-    dispatch,
-  ]);
+    dispatch({ type: 'SET_ITEMS', payload: items });
+  }, [selections, selectedDate, selectedPeriod, state.form.procedures, slotsByProc, dispatch]);
 
-  const handleDate = (d: Date | undefined) => {
-    if (!d) return;
-    // O Contexto agora substitui a data atual pela nova
-    dispatch({ type: "ADD_DATE", payload: d });
-    setSelections({});
-  };
+  const handleDate = useCallback(
+    (d: Date | undefined) => {
+      if (!d) return;
+      dispatch({ type: 'ADD_DATE', payload: d });
+      setSelections({});
+    },
+    [dispatch]
+  );
 
-  const handlePeriod = (p: Period) => {
-    if (selectedPeriod === p) return;
-    if (selectedPeriod)
-      dispatch({ type: "TOGGLE_PERIOD", payload: selectedPeriod });
-    dispatch({ type: "TOGGLE_PERIOD", payload: p });
-    setSelections({});
-  };
+  const handlePeriod = useCallback(
+    (p: Period) => {
+      if (selectedPeriod === p) return;
+      if (selectedPeriod) dispatch({ type: 'TOGGLE_PERIOD', payload: selectedPeriod });
+      dispatch({ type: 'TOGGLE_PERIOD', payload: p });
+      setSelections({});
+    },
+    [selectedPeriod, dispatch]
+  );
 
-  const filterSlotsByPeriod = (slots: AvailabilitySlot[]) => {
-    let filtered = slots;
-    if (selectedPeriod) {
-      filtered = filtered.filter(
-        (s) => getPeriodFromTime(s.startTime) === selectedPeriod,
-      );
-    }
-    
-    // Filtro rigoroso no frontend para esconder horários do passado
-    const now = new Date();
-    filtered = filtered.filter((s) => new Date(s.startTime).getTime() > now.getTime());
-    
-    return filtered;
-  };
+  const filterSlotsByPeriod = useCallback(
+    (slots: AvailabilitySlot[]) => {
+      const nowMs = Date.now();
+      return slots.filter((s) => {
+        if (selectedPeriod && getPeriodFromTime(s.startTime) !== selectedPeriod) {
+          return false;
+        }
+        return new Date(s.startTime).getTime() > nowMs;
+      });
+    },
+    [selectedPeriod]
+  );
+
+  // Pré-calcula o estado "indisponível" para o período da manhã (depende
+  // de selectedDate + hora atual). Memoizado para não recalcular a cada render
+  // dentro do map de PERIODS.
+  const isMorningDisabled = useMemo(() => {
+    if (!selectedDate) return false;
+    const isToday = selectedDate.toDateString() === new Date().toDateString();
+    return isToday && new Date().getHours() >= 12;
+  }, [selectedDate]);
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <section>
-        <p className="text-sm text-muted-foreground mb-3 font-medium">
-          Escolha a data:
-        </p>
+        <p className="text-sm text-muted-foreground mb-3 font-medium">Escolha a data:</p>
         <div className="bg-card rounded-2xl border border-border p-2 shadow-sm">
           <Calendar
             mode="single"
@@ -166,7 +162,7 @@ export default function StepDateTime() {
             className="rounded-lg mx-auto"
             classNames={{
               day_today:
-                "bg-transparent font-semibold text-foreground ring-1 ring-border aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:ring-0",
+                'bg-transparent font-semibold text-foreground ring-1 ring-border aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:ring-0',
             }}
             initialFocus
           />
@@ -181,15 +177,10 @@ export default function StepDateTime() {
       </section>
 
       <section>
-        <p className="text-sm text-muted-foreground mb-3 font-medium">
-          Período:
-        </p>
+        <p className="text-sm text-muted-foreground mb-3 font-medium">Período:</p>
         <div className="grid grid-cols-2 gap-3">
           {PERIODS.map((p) => {
-            const isToday =
-              selectedDate?.toDateString() === new Date().toDateString();
-            const currentHour = new Date().getHours();
-            const isDisabled = isToday && p.id === "manha" && currentHour >= 12;
+            const isDisabled = p.id === 'manha' && isMorningDisabled;
 
             return (
               <button
@@ -199,16 +190,16 @@ export default function StepDateTime() {
                 onClick={() => handlePeriod(p.id)}
                 className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
                   isDisabled
-                    ? "border-border bg-muted/50 opacity-50 cursor-not-allowed"
+                    ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
                     : selectedPeriod === p.id
-                      ? "border-gold bg-gold/10"
-                      : "border-border hover:border-gold/30 bg-card"
+                      ? 'border-gold bg-gold/10'
+                      : 'border-border hover:border-gold/30 bg-card'
                 }`}
               >
                 <span className="text-2xl mb-1">{p.icon}</span>
                 <span className="font-bold text-sm">{p.label}</span>
                 <span className="text-[10px] text-muted-foreground uppercase">
-                  {isDisabled ? "Indisponível" : p.hours}
+                  {isDisabled ? 'Indisponível' : p.hours}
                 </span>
               </button>
             );
@@ -218,98 +209,89 @@ export default function StepDateTime() {
 
       {selectedDate && selectedPeriod && (
         <section className="space-y-4">
-          <p className="text-sm text-muted-foreground font-medium">
-            Horários disponíveis:
-          </p>
+          <p className="text-sm text-muted-foreground font-medium">Horários disponíveis:</p>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="animate-spin text-gold" size={32} />
-              <p className="text-xs text-muted-foreground">
-                Consultando agenda...
-              </p>
+              <p className="text-xs text-muted-foreground">Consultando agenda...</p>
             </div>
           ) : (
             <div className="space-y-4">
               {state.form.procedures.map((proc) => {
-                  const profs = slotsByProc[proc.id] || [];
-                  const sel = selections[proc.id];
-                  const availableProfs = profs.filter(
-                    (p) => filterSlotsByPeriod(p.slots).length > 0,
-                  );
+                const profs = slotsByProc[proc.id] || [];
+                const sel = selections[proc.id];
+                const availableProfs = profs.filter((p) => filterSlotsByPeriod(p.slots).length > 0);
 
-                  return (
-                    <div
-                      key={proc.id}
-                      className={`border rounded-2xl p-4 transition-all ${
-                        availableProfs.length === 0
-                          ? "bg-destructive/5 border-destructive/30"
-                          : "bg-muted/30 border-border"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-sm text-foreground">
-                          {proc.name}
-                        </h4>
-                        {availableProfs.length === 0 && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full bg-destructive/20 text-destructive text-[10px] font-bold uppercase">
-                            Indisponível
-                          </span>
-                        )}
-                      </div>
-
-                      {availableProfs.length === 0 ? (
-                        <div className="py-4 text-center border border-dashed border-destructive/30 rounded-lg bg-destructive/10">
-                          <p className="text-xs text-destructive font-medium">
-                            Sem horários disponíveis para este período.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {availableProfs.map((pa) => (
-                            <div key={pa.professional.id}>
-                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
-                                {pa.professional.name}
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {filterSlotsByPeriod(pa.slots).map((s) => {
-                                  const isSel =
-                                    sel?.startTime === s.startTime &&
-                                    sel?.professionalId === pa.professional.id;
-                                  return (
-                                    <button
-                                      key={`${pa.professional.id}-${s.startTime}`}
-                                      data-testid="time-slot"
-                                      onClick={() =>
-                                        setSelections((prev) => ({
-                                          ...prev,
-                                          [proc.id]: {
-                                            professionalId: pa.professional.id,
-                                            professionalName:
-                                              pa.professional.name,
-                                            startTime: s.startTime,
-                                            endTime: s.endTime,
-                                          },
-                                        }))
-                                      }
-                                      className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
-                                        isSel
-                                          ? "bg-gold text-primary border-gold shadow-md"
-                                          : "bg-background border-border hover:border-gold/50"
-                                      }`}
-                                    >
-                                      {formatTimeFromIso(s.startTime)}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                return (
+                  <div
+                    key={proc.id}
+                    className={`border rounded-2xl p-4 transition-all ${
+                      availableProfs.length === 0
+                        ? 'bg-destructive/5 border-destructive/30'
+                        : 'bg-muted/30 border-border'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-sm text-foreground">{proc.name}</h4>
+                      {availableProfs.length === 0 && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-destructive/20 text-destructive text-[10px] font-bold uppercase">
+                          Indisponível
+                        </span>
                       )}
                     </div>
-                  );
-                })}
+
+                    {availableProfs.length === 0 ? (
+                      <div className="py-4 text-center border border-dashed border-destructive/30 rounded-lg bg-destructive/10">
+                        <p className="text-xs text-destructive font-medium">
+                          Sem horários disponíveis para este período.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {availableProfs.map((pa) => (
+                          <div key={pa.professional.id}>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2">
+                              {pa.professional.name}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {filterSlotsByPeriod(pa.slots).map((s) => {
+                                const isSel =
+                                  sel?.startTime === s.startTime &&
+                                  sel?.professionalId === pa.professional.id;
+                                return (
+                                  <button
+                                    key={`${pa.professional.id}-${s.startTime}`}
+                                    data-testid="time-slot"
+                                    onClick={() =>
+                                      setSelections((prev) => ({
+                                        ...prev,
+                                        [proc.id]: {
+                                          professionalId: pa.professional.id,
+                                          professionalName: pa.professional.name,
+                                          startTime: s.startTime,
+                                          endTime: s.endTime,
+                                        },
+                                      }))
+                                    }
+                                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
+                                      isSel
+                                        ? 'bg-gold text-primary border-gold shadow-md'
+                                        : 'bg-background border-border hover:border-gold/50'
+                                    }`}
+                                  >
+                                    {formatTimeFromIso(s.startTime)}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
