@@ -66,7 +66,12 @@
       "Bash(npx tsc *)",
       "Bash(echo \"EXIT=$?\")",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Eric\\\\Desktop\\\\Studio-Front\" -Force)",
-      "Bash(Select-Object Name, FullName)"
+      "Bash(Select-Object Name, FullName)",
+      "Bash(Start-Sleep -Seconds 8)",
+      "Bash(Get-Content \"C:\\\\Users\\\\Eric\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Eric-Desktop-Studio-Front\\\\41f796ae-cdf1-4ffb-8d5e-7046a6a516c9\\\\tasks\\\\bbie8d7em.output\" -Tail 20)",
+      "Bash(sleep 8 && tail -20 \"/c/Users/Eric/AppData/Local/Temp/claude/c--Users-Eric-Desktop-Studio-Front/41f796ae-cdf1-4ffb-8d5e-7046a6a516c9/tasks/bbie8d7em.output\")",
+      "Read(//c/Users/Eric/AppData/Local/Temp/claude/c--Users-Eric-Desktop-Studio-Front/41f796ae-cdf1-4ffb-8d5e-7046a6a516c9/tasks/**)",
+      "Bash(curl -s http://localhost:3002/servicos)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Eric\\Documents\\Projetos para venda\\Studio-Front"

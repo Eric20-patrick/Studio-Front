@@ -4,7 +4,7 @@ import { Professional } from "@/types";
 import { getProfessionals, resolveAvatarUrl } from "@/services/professionalService";
 import { STALE_TIME_PUBLIC_DATA } from "@/constants/queryCache";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { User, Sparkles } from "lucide-react";
+import { User, Sparkles, Search, ChevronDown, X } from "lucide-react";
 import heroImg from "../assets/hero-salon.jpg";
 import Image from "next/image";
 
@@ -17,6 +17,8 @@ import {
 
 export default function TeamPage() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSpecialty, setFilterSpecialty] = useState("");
   const ref = useScrollReveal();
 
   useEffect(() => {
@@ -35,6 +37,17 @@ export default function TeamPage() {
       team.flatMap((p) => p.specialties || (p.specialty ? [p.specialty] : [])),
     ),
   );
+
+  const filteredTeam = team.filter(p => {
+    const matchesSearch = !searchQuery.trim() ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSpecialty = !filterSpecialty ||
+      (p.specialties || []).includes(filterSpecialty) ||
+      p.specialty === filterSpecialty;
+    return matchesSearch && matchesSpecialty;
+  });
+
+  const hasActiveFilters = searchQuery.trim() || filterSpecialty;
 
   const MAX_DESCRIPTION_LENGTH = 120;
   const shouldTruncate = (text: string) => text.length > MAX_DESCRIPTION_LENGTH;
@@ -66,6 +79,69 @@ export default function TeamPage() {
 
       <section className="section-padding bg-[#faf8f5]">
         <div ref={ref} className="container-salon scroll-reveal space-y-12">
+          {/* Controles de busca e filtro condicionais */}
+          {team.length > 10 && (
+            <div className="bg-white rounded-lg p-6 border border-gold/10 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Busca */}
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gold w-5 h-5 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Buscar profissional..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-2.5 rounded-lg border border-gold/20 bg-white text-black placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all"
+                  />
+                </div>
+
+                {/* Filtro de especialidade */}
+                <div className="flex-1 relative">
+                  <select
+                    value={filterSpecialty}
+                    onChange={(e) => setFilterSpecialty(e.target.value)}
+                    className="w-full pl-4 pr-10 py-2.5 rounded-lg border border-gold/20 bg-white text-black placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="">Filtrar por especialidade</option>
+                    {allSpecialties.map((specialty) => (
+                      <option key={specialty} value={specialty}>
+                        {specialty}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gold">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Botão limpar filtros */}
+                {hasActiveFilters && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setFilterSpecialty("");
+                    }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gold/10 border border-gold/20 text-gold-dark hover:bg-gold/20 transition-all"
+                  >
+                    <X size={18} />
+                    <span className="text-sm font-medium hidden sm:inline">Limpar</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
               {Array.from({ length: 8 }).map((_, i) => (
@@ -76,21 +152,39 @@ export default function TeamPage() {
                 </div>
               ))}
             </div>
+          ) : filteredTeam.length === 0 && (searchQuery.trim() || filterSpecialty) ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Nenhum profissional encontrado
+                {searchQuery.trim() && filterSpecialty ?
+                  ` para "${searchQuery}" com especialidade "${filterSpecialty}"` :
+                  searchQuery.trim() ? ` para "${searchQuery}"` :
+                  ` com especialidade "${filterSpecialty}"`
+                }
+              </p>
+            </div>
           ) : (
-            allSpecialties.map((specialty) => (
-              <div key={specialty}>
-                <h2 className="text-2xl font-display font-bold text-gold mb-2 ">
-                  {specialty}
-                </h2>
-                <div className="h-px bg-gold/30 mb-6 " />
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
-                  {team
-                    .filter(
-                      (p) =>
-                        (p.specialties || []).includes(specialty) ||
-                        p.specialty === specialty,
-                    )
-                    .map((prof) => (
+            <>
+              {allSpecialties
+                .filter(specialty =>
+                  filteredTeam.some(p =>
+                    (p.specialties || []).includes(specialty) || p.specialty === specialty
+                  )
+                )
+                .map((specialty) => (
+                <div key={specialty}>
+                  <h2 className="text-2xl font-display font-bold text-gold mb-2 ">
+                    {specialty}
+                  </h2>
+                  <div className="h-px bg-gold/30 mb-6 " />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ">
+                    {filteredTeam
+                      .filter(
+                        (p) =>
+                          (p.specialties || []).includes(specialty) ||
+                          p.specialty === specialty,
+                      )
+                      .map((prof) => (
                       <div
                         key={prof.id}
                         className="group relative bg-white rounded-2xl p-6 flex flex-col items-center text-center shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gold/10 hover:border-gold/30 overflow-hidden"
@@ -166,9 +260,18 @@ export default function TeamPage() {
                         )}
                       </div>
                     ))}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+
+              {/* Indicador de scroll */}
+              {team.length > 10 && (
+                <div className="text-center py-8 text-sm text-muted-foreground flex flex-col items-center gap-2">
+                  <ChevronDown className="animate-bounce text-gold" size={20} />
+                  <span>Role para ver todos os {team.length} profissionais da equipe</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

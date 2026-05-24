@@ -5,7 +5,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Procedure } from "@/types";
 import { getProcedures } from "@/services/procedureService";
 import { STALE_TIME_PUBLIC_DATA } from "@/constants/queryCache";
-import { Clock, Calendar, Sparkles, ArrowRight } from "lucide-react";
+import { Clock, Calendar, Sparkles, ArrowRight, Search } from "lucide-react";
 import { formatDuration } from "@/utils";
 import { assetSrc } from "@/lib/assetSrc";
 import type { StaticImageData } from "next/image";
@@ -31,6 +31,7 @@ const categoryImages: Record<string, StaticImageData> = {
 export default function ServicesPage() {
   const { dispatch } = useBooking();
   const [selectedService, setSelectedService] = useState<Procedure | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const ref = useScrollReveal();
 
   useEffect(() => {
@@ -42,6 +43,13 @@ export default function ServicesPage() {
     queryFn: () => getProcedures().catch(() => [] as Procedure[]),
     staleTime: STALE_TIME_PUBLIC_DATA,
   });
+
+  const filteredProcedures = searchQuery.trim()
+    ? procedures.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : procedures;
 
   const handleOpenBooking = (proc: Procedure) => {
     dispatch({ type: "SET_PROCEDURE", payload: proc });
@@ -168,15 +176,39 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {procedures.map((proc) => (
+          {/* Barra de busca condicional */}
+          {procedures.length > 10 && (
+            <div className="mb-8 flex justify-center">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gold w-5 h-5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Buscar serviço..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-2.5 rounded-lg border border-gold/20 bg-white text-black placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all"
+                />
+              </div>
+            </div>
+          )}
+
+          {filteredProcedures.length === 0 && searchQuery.trim() ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Nenhum serviço encontrado para "<strong>{searchQuery}</strong>"
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProcedures.map((proc) => (
               <ProcedureCard
                 key={proc.id}
                 proc={proc}
                 onBook={() => handleOpenBooking(proc)}
               />
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 

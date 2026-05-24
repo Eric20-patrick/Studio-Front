@@ -11,10 +11,10 @@
       "static/chunks/_app-pages-browser_src_views_admin_AdminBookings_tsx.js"
     ]
   },
-  "app\\admin\\(protected)\\page.tsx -> @/views/admin/AdminDashboard": {
-    "id": "app\\admin\\(protected)\\page.tsx -> @/views/admin/AdminDashboard",
+  "app\\admin\\(protected)\\procedimentos\\page.tsx -> @/views/admin/AdminProcedures": {
+    "id": "app\\admin\\(protected)\\procedimentos\\page.tsx -> @/views/admin/AdminProcedures",
     "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminDashboard_tsx.js"
+      "static/chunks/_app-pages-browser_src_views_admin_AdminProcedures_tsx.js"
     ]
   },
   "app\\admin\\(protected)\\profissionais\\page.tsx -> @/views/admin/AdminProfessionals": {
@@ -27,12 +27,6 @@
     "id": "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard",
     "files": [
       "static/chunks/_app-pages-browser_src_views_admin_ReceptionDashboard_tsx.js"
-    ]
-  },
-  "app\\admin\\login\\page.tsx -> @/views/admin/AdminLogin": {
-    "id": "app\\admin\\login\\page.tsx -> @/views/admin/AdminLogin",
-    "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminLogin_tsx.js"
     ]
   }
 }
