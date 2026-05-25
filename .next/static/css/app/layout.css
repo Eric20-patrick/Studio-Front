@@ -1313,6 +1313,9 @@ h1,
 .w-px{
   width: 1px;
 }
+.w-5\/6{
+  width: 83.333333%;
+}
 .min-w-0{
   min-width: 0px;
 }
@@ -2530,6 +2533,9 @@ h1,
 .pl-9{
   padding-left: 2.25rem;
 }
+.pr-10{
+  padding-right: 2.5rem;
+}
 .pr-2{
   padding-right: 0.5rem;
 }
@@ -2574,9 +2580,6 @@ h1,
 }
 .pt-8{
   padding-top: 2rem;
-}
-.pr-10{
-  padding-right: 2.5rem;
 }
 .text-left{
   text-align: left;
@@ -3647,12 +3650,12 @@ h1,
   --tw-ring-color: hsl(var(--gold));
 }
 
-.focus\:ring-ring:focus{
-  --tw-ring-color: hsl(var(--ring));
-}
-
 .focus\:ring-gold\/50:focus{
   --tw-ring-color: hsl(var(--gold) / 0.5);
+}
+
+.focus\:ring-ring:focus{
+  --tw-ring-color: hsl(var(--ring));
 }
 
 .focus\:ring-offset-2:focus{

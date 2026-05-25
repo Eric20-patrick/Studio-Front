@@ -15,12 +15,17 @@ import {
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activePost, setActivePost] = useState<BlogPost | null>(null);
   const ref = useScrollReveal();
 
   useEffect(() => {
     document.title = "Blog | Studio Neo";
-    getBlogPosts().then(setPosts);
+    setLoading(true);
+    getBlogPosts()
+      .then(setPosts)
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false));
   }, []);
 
   // Estima tempo de leitura (200 palavras por minuto)
@@ -84,7 +89,26 @@ export default function BlogPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black">
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl overflow-hidden shadow-md border border-gold/10 flex flex-col"
+                >
+                  <div className="aspect-video bg-muted animate-pulse" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-5 bg-muted animate-pulse rounded w-3/4" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-full" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-5/6" />
+                    <div className="h-4 bg-muted animate-pulse rounded w-1/3 mt-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-black ${loading ? 'hidden' : ''}`}>
             {posts.map((post) => {
               const minutes = readingTime(post.content || post.excerpt || "");
               return (
@@ -162,7 +186,7 @@ export default function BlogPage() {
           </div>
 
           {/* Estado vazio */}
-          {posts.length === 0 && (
+          {!loading && posts.length === 0 && (
             <div className="text-center py-16">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold/10 mb-4">
                 <BookOpen size={28} className="text-gold-dark" />

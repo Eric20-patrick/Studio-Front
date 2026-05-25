@@ -38,7 +38,7 @@ export default function ServicesPage() {
     document.title = "Nossos Serviços | Studio Neo";
   }, []);
 
-  const { data: procedures = [] } = useQuery({
+  const { data: procedures = [], isLoading } = useQuery({
     queryKey: ['publicProcedures'],
     queryFn: () => getProcedures().catch(() => [] as Procedure[]),
     staleTime: STALE_TIME_PUBLIC_DATA,
@@ -192,7 +192,24 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {filteredProcedures.length === 0 && searchQuery.trim() ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl overflow-hidden shadow-md border border-gold/10 flex flex-col"
+                >
+                  <div className="aspect-video bg-muted animate-pulse" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-5 bg-muted animate-pulse rounded w-3/4" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-full" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-5/6" />
+                    <div className="h-10 bg-muted animate-pulse rounded-lg mt-4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredProcedures.length === 0 && searchQuery.trim() ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 Nenhum serviço encontrado para "<strong>{searchQuery}</strong>"

@@ -4,29 +4,5 @@
     "files": [
       "static/chunks/_app-pages-browser_src_components_booking_BookingModal_tsx.js"
     ]
-  },
-  "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings": {
-    "id": "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings",
-    "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminBookings_tsx.js"
-    ]
-  },
-  "app\\admin\\(protected)\\procedimentos\\page.tsx -> @/views/admin/AdminProcedures": {
-    "id": "app\\admin\\(protected)\\procedimentos\\page.tsx -> @/views/admin/AdminProcedures",
-    "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminProcedures_tsx.js"
-    ]
-  },
-  "app\\admin\\(protected)\\profissionais\\page.tsx -> @/views/admin/AdminProfessionals": {
-    "id": "app\\admin\\(protected)\\profissionais\\page.tsx -> @/views/admin/AdminProfessionals",
-    "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminProfessionals_tsx.js"
-    ]
-  },
-  "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard": {
-    "id": "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard",
-    "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_ReceptionDashboard_tsx.js"
-    ]
   }
 }

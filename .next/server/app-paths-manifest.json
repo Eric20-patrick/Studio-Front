@@ -1,8 +1,4 @@
 {
   "/(marketing)/page": "app/(marketing)/page.js",
-  "/(marketing)/servicos/page": "app/(marketing)/servicos/page.js",
-  "/(marketing)/equipe/page": "app/(marketing)/equipe/page.js",
-  "/admin/(protected)/agendamentos/page": "app/admin/(protected)/agendamentos/page.js",
-  "/admin/(protected)/recepcao/page": "app/admin/(protected)/recepcao/page.js",
-  "/admin/(protected)/procedimentos/page": "app/admin/(protected)/procedimentos/page.js"
+  "/(marketing)/equipe/page": "app/(marketing)/equipe/page.js"
 }
