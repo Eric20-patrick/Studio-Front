@@ -5,7 +5,7 @@ import { getProfessionals, resolveAvatarUrl } from "@/services/professionalServi
 import { STALE_TIME_PUBLIC_DATA } from "@/constants/queryCache";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { User, Sparkles, Search, ChevronDown, X } from "lucide-react";
-import heroImg from "../assets/hero-salon.jpg";
+import heroImg from "../assets/hero-salon.png";
 import Image from "next/image";
 
 import {
@@ -22,7 +22,7 @@ export default function TeamPage() {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    document.title = "Nossa Equipe | Studio Neo";
+    document.title = "Nossa Equipe | Salão de Beleza";
   }, []);
 
   const { data: team = [], isLoading: loading } = useQuery({
@@ -59,7 +59,7 @@ export default function TeamPage() {
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
           src={heroImg}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary/90" />

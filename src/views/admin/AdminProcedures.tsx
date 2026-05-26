@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Procedure } from '@/types';
 import { STALE_TIME_ADMIN_DATA } from '@/constants/queryCache';
@@ -47,7 +47,7 @@ export default function AdminProcedures() {
   const [priceError, setPriceError] = useState('');
 
   useEffect(() => {
-    document.title = 'Procedimentos | Studio Neo';
+    document.title = 'Procedimentos | Salão de Beleza';
   }, []);
 
   const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
@@ -434,3 +434,4 @@ function Modal({
     </div>
   );
 }
+

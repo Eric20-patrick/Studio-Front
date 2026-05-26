@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminDashboard, AdminDashboardData } from '@/services/dashboardService';
 import { STALE_TIME_REALTIME } from '@/constants/queryCache';
@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   const [expBusy, setExpBusy] = useState<'pdf' | 'xlsx' | null>(null);
 
   useEffect(() => {
-    document.title = 'Dashboard | Studio Neo Admin';
+    document.title = 'Dashboard | Salão de Beleza Admin';
   }, []);
 
   const {
@@ -336,3 +336,4 @@ function StatCard({ icon, label, value, sub }: StatCardProps) {
     </div>
   );
 }
+

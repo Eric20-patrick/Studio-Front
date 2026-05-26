@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" fill="none">
+  <!-- Ícone: tesoura estilizada -->
+  <g transform="translate(0, 8)">
+    <!-- Lâmina superior -->
+    <path d="M8 8 C14 4, 22 6, 26 14 L34 30 L30 32 L20 16 C18 12, 12 10, 8 12 C4 14, 3 18, 5 22 C7 26, 12 27, 16 25 L18 24 L20 28 L17 30 C10 33, 2 30, 0 23 C-2 16, 2 10, 8 8Z" fill="#1a1a1a"/>
+    <!-- Lâmina inferior -->
+    <path d="M8 42 C14 46, 22 44, 26 36 L34 20 L30 18 L20 34 C18 38, 12 40, 8 38 C4 36, 3 32, 5 28 C7 24, 12 23, 16 25 L18 26 L20 22 L17 20 C10 17, 2 20, 0 27 C-2 34, 2 40, 8 42Z" fill="#1a1a1a"/>
+    <!-- Parafuso central -->
+    <circle cx="32" cy="25" r="3" fill="#1a1a1a"/>
+  </g>
+  <!-- Texto principal -->
+  <text x="48" y="28" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1a1a1a" letter-spacing="1">Salão de</text>
+  <text x="48" y="48" font-family="Georgia, 'Times New Roman', serif" font-size="18" font-weight="700" fill="#1a1a1a" letter-spacing="1">Beleza</text>
+  <!-- Linha decorativa dourada -->
+  <line x1="48" y1="52" x2="175" y2="52" stroke="#C9A84C" stroke-width="1.5"/>
+</svg>

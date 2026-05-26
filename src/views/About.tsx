@@ -3,8 +3,8 @@ import type { StaticImageData } from "next/image";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { assetSrc } from "@/lib/assetSrc";
 import { Heart, BookOpen, Sparkles, Award } from "lucide-react";
-import neo from "@/assets/neo.jpg";
-import valores from "@/assets/valores.jpg";
+import neo from "@/assets/neo.png";
+import valores from "@/assets/valores.png";
 import historia from "@/assets/historia.png";
 import hero from "../assets/hero.png";
 import Image from "next/image";
@@ -12,14 +12,14 @@ import Image from "next/image";
 const sections = [
   {
     title: "Nossa História",
-    text: "Bem-vindo ao NEOSTUDIO, um salão de beleza elegante e cheio de estilo, pensado para toda a família, no bairro de Vila Andrade, São Paulo.",
+    text: "Bem-vindo ao nosso Salão de Beleza, um espaço elegante e cheio de estilo, pensado para toda a família, com atendimento exclusivo e de qualidade.",
     img: neo,
     icon: BookOpen,
     label: "Início",
   },
   {
     title: "Nossos Valores",
-    text: "Fundado com a paixão de transformar vidas através da beleza, o Studio Neo nasceu do sonho de criar um espaço onde cada mulher pudesse se sentir única e especial. Há mais de 10 anos, temos o privilégio de fazer parte de momentos especiais na vida das nossas clientes..",
+    text: "Fundado com a paixão de transformar vidas através da beleza, nosso salão nasceu do sonho de criar um espaço onde cada mulher pudesse se sentir única e especial. Temos o privilégio de fazer parte de momentos especiais na vida das nossas clientes.",
     img: valores,
     icon: Heart,
     label: "Paixão",
@@ -35,7 +35,7 @@ const sections = [
 
 export default function AboutPage() {
   useEffect(() => {
-    document.title = "Quem Somos | Studio Neo";
+    document.title = "Quem Somos | Salão de Beleza";
   }, []);
 
   return (
@@ -43,7 +43,7 @@ export default function AboutPage() {
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
           src={assetSrc(hero)}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           className="absolute inset-0 w-full h-full object-cover"
           width={1000}
           height={1000}

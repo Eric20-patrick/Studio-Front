@@ -3,8 +3,11 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Studio Neo",
-  description: "Salão de beleza Studio Neo",
+  title: "Salão de Beleza",
+  description: "Salão de beleza feminino",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

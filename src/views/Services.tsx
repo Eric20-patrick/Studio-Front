@@ -9,9 +9,9 @@ import { Clock, Calendar, Sparkles, ArrowRight, Search } from "lucide-react";
 import { formatDuration } from "@/utils";
 import { assetSrc } from "@/lib/assetSrc";
 import type { StaticImageData } from "next/image";
-import serviceHair from "@/assets/service-hair.jpg";
-import serviceNails from "@/assets/service-nails.jpg";
-import serviceMakeup from "@/assets/service-makeup.jpg";
+import serviceHair from "@/assets/service-hair.png";
+import serviceNails from "@/assets/service-nails.png";
+import serviceMakeup from "@/assets/service-makeup.png";
 import heroServices from "../assets/heroS.png";
 import {
   Dialog,
@@ -35,7 +35,7 @@ export default function ServicesPage() {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    document.title = "Nossos Serviços | Studio Neo";
+    document.title = "Nossos Serviços | Salão de Beleza";
   }, []);
 
   const { data: procedures = [], isLoading } = useQuery({
@@ -148,7 +148,7 @@ export default function ServicesPage() {
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <img
           src={assetSrc(heroServices)}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary/90" />

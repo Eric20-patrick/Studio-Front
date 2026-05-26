@@ -1,12 +1,12 @@
 export const SALON_INFO = {
-  name: 'Studio Neo',
+  name: 'Salão de Beleza',
   phone: '5511977485165',
   address: 'São Paulo, SP',
-  instagram: 'https://instagram.com/studioneosp',
-  facebook: 'https://facebook.com/studioneosp',
+  instagram: 'https://instagram.com/',
+  facebook: 'https://facebook.com/',
   hours: 'Segunda a Sábado, 08h às 20h',
   whatsapp: '5511977485165',
-  logo: 'http://studioneo.com.br/wp-content/uploads/2014/01/logo-neo.png',
+  logo: '/logo.svg',
   mapsEmbed: 'https://www.google.com/maps?cid=9434247663555102546&hl=pt-BR&output=embed',
 };
 

@@ -34,7 +34,7 @@ export default function Footer() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="relative w-full block"
-                title="Localização Studio Neo"
+                title="Localização Salão de Beleza"
               />
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function Footer() {
             <div className="flex flex-col items-center md:items-start gap-4">
               <img
                 src={SALON_INFO.logo}
-                alt="Studio Neo"
+                alt="Salão de Beleza"
                 className="h-12 object-contain brightness-0 invert"
               />
               <div className="flex items-center gap-2 text-sm text-white/70">

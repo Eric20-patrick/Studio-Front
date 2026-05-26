@@ -1,19 +1,19 @@
 ﻿import { useEffect, useState } from 'react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { X, ChevronLeft, ChevronRight, ZoomIn, Camera } from 'lucide-react';
-import gImg2 from '@/assets/G2.jpg';
+import gImg2 from '@/assets/G2.png';
 import gImg3 from '@/assets/G3.png';
 import gImg4 from '@/assets/G4.png';
-import gImg5 from '@/assets/G5.jpg';
-import gImg7 from '@/assets/G7.jpg';
+import gImg5 from '@/assets/G5.png';
+import gImg7 from '@/assets/G7.png';
 import gImg8 from '@/assets/G8.png';
-import gImg9 from '@/assets/G9.jpg';
-import gImg10 from '@/assets/G10.jpg';
+import gImg9 from '@/assets/G9.png';
+import gImg10 from '@/assets/G10.png';
 import gImg11 from '@/assets/G11.png';
 import gImg12 from '@/assets/G12.png';
 import gImg13 from '@/assets/G13.png';
-import gImg14 from '@/assets/G14.jpg';
-import gImg15 from '@/assets/G15.jpg';
+import gImg14 from '@/assets/G14.png';
+import gImg15 from '@/assets/G15.png';
 import heroG from '@/assets/heroG.png';
 import Image from 'next/image';
 
@@ -39,7 +39,7 @@ export default function GalleryPage() {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    document.title = 'Galeria | Studio Neo';
+    document.title = 'Galeria | Salão de Beleza';
     const timer = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
@@ -68,7 +68,7 @@ export default function GalleryPage() {
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
           src={heroG}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           fill
           priority
           sizes="100vw"

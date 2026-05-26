@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+﻿import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { STALE_TIME_ADMIN_DATA } from '@/constants/queryCache';
 import { Professional, WorkingHourBlock, WeekDay } from '@/types';
@@ -162,7 +162,7 @@ export default function AdminProfessionals() {
   }, [pendingAvatarPreview]);
 
   useEffect(() => {
-    document.title = 'Profissionais | Studio Neo';
+    document.title = 'Profissionais | Salão de Beleza';
   }, []);
 
   const { data: queryData, isLoading: loading, error: queryError, refetch } = useQuery({
@@ -995,3 +995,4 @@ function Modal({
     </div>
   );
 }
+

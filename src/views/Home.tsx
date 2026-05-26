@@ -6,7 +6,7 @@ import { mockTestimonials } from "@/mock/testimonials";
 import { Star, Calendar, ArrowRight, X, ChevronLeft, ChevronRight } from "lucide-react";
 import hero from "@/assets/hero.png";
 import g1 from "../assets/G1.png";
-import g2 from "../assets/G2.jpg";
+import g2 from "../assets/G2.png";
 import g4 from "../assets/G4.png";
 import Image from "next/image";
 
@@ -14,7 +14,7 @@ export default function HomePage() {
   const { dispatch } = useBooking();
 
   useEffect(() => {
-    document.title = "Studio Neo | Salão de Beleza";
+    document.title = "Salão de Beleza | Salão de Beleza";
   }, []);
 
   return (
@@ -39,7 +39,7 @@ function HeroSection({ onBook }: HeroSectionProps) {
       <div className="absolute inset-0">
         <Image
           src={hero}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           fill
           className="object-cover"
           priority
@@ -57,7 +57,7 @@ function HeroSection({ onBook }: HeroSectionProps) {
           </h1>
 
           <p className="text-lg text-white/80 mb-10 font-light leading-relaxed">
-            Bem-vinda ao Studio Neo. Um espaço dedicado a transformar e cuidar
+            Bem-vinda ao Salão de Beleza. Um espaço dedicado a transformar e cuidar
             de você com elegância e profissionalismo.
           </p>
 
@@ -196,7 +196,7 @@ function GalleryPreview() {
             >
               <Image
                 src={img}
-                alt="Galeria do Studio Neo"
+                alt="Galeria do Salão de Beleza"
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 placeholder="blur"

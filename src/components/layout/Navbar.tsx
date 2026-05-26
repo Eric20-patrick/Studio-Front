@@ -17,7 +17,7 @@ function Navbar() {
         <Link href="/" className="flex-shrink-0">
           <img
             src={SALON_INFO.logo}
-            alt="Studio Neo"
+            alt="Salão de Beleza"
             className="h-10 object-contain brightness-0 invert"
           />
         </Link>
@@ -74,7 +74,7 @@ function Navbar() {
               <div className="flex-1" />
               <img
                 src={SALON_INFO.logo}
-                alt="Studio Neo"
+                alt="Salão de Beleza"
                 className="h-8 object-contain brightness-0 invert"
               />
               <div className="flex-1 flex justify-end">

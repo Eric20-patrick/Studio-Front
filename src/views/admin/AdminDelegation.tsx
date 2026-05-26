@@ -30,7 +30,7 @@ export default function AdminDelegation() {
   const [drafts, setDrafts] = useState<Record<string, DelegatedPermissions>>({});
 
   useEffect(() => {
-    document.title = 'Delegar funções | Studio Neo';
+    document.title = 'Delegar funções | Salão de Beleza';
   }, []);
 
   const load = () => {
@@ -148,3 +148,4 @@ export default function AdminDelegation() {
     </div>
   );
 }
+

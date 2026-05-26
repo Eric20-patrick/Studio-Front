@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getReceptionDashboard, ReceptionDashboardData } from '@/services/dashboardService';
 import { STALE_TIME_REALTIME } from '@/constants/queryCache';
@@ -51,7 +51,7 @@ export default function ReceptionDashboard() {
   const allowComplete = date === localCalendarToday();
 
   useEffect(() => {
-    document.title = 'Fila do dia | Studio Neo';
+    document.title = 'Fila do dia | Salão de Beleza';
   }, []);
 
   const params = {
@@ -547,3 +547,4 @@ function Mini({
     </div>
   );
 }
+

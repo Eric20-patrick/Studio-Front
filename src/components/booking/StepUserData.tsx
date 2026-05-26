@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useBooking } from "@/hooks/useBooking";
 import { createBooking } from "@/services/bookingService";
 import { formatPhone, formatDate, formatTimeFromIso } from "@/utils";
@@ -214,7 +214,7 @@ export default function StepUserData() {
             className="mt-1 h-4 w-4 rounded border-input bg-background text-gold focus:ring-gold"
           />
           <label htmlFor="marketingConsent" className="text-xs text-muted-foreground leading-tight">
-            * Concordo que o Studio Neo armazene meus dados para este agendamento e aceito receber comunicações e ofertas sobre os serviços por e-mail ou WhatsApp, conforme a LGPD.
+            * Concordo que o Salão de Beleza armazene meus dados para este agendamento e aceito receber comunicações e ofertas sobre os serviços por e-mail ou WhatsApp, conforme a LGPD.
           </label>
         </div>
       </div>
@@ -242,3 +242,4 @@ export default function StepUserData() {
     </div>
   );
 }
+

@@ -4,7 +4,7 @@ import { getBlogPosts } from "@/services/blogService";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Calendar, BookOpen, ArrowRight, Clock, Sparkles } from "lucide-react";
 import { assetSrc } from "@/lib/assetSrc";
-import serviceHair from "@/assets/service-hair.jpg";
+import serviceHair from "@/assets/service-hair.png";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ export default function BlogPage() {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    document.title = "Blog | Studio Neo";
+    document.title = "Blog | Salão de Beleza";
     setLoading(true);
     getBlogPosts()
       .then(setPosts)
@@ -55,8 +55,8 @@ export default function BlogPage() {
       {/* HERO */}
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <img
-          src="https://studioneo.com.br/wp-content/uploads/2024/06/Blog-NEO-1.webp"
-          alt="Studio Neo"
+          src={assetSrc(serviceHair)}
+          alt="Salão de Beleza"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary/90" />

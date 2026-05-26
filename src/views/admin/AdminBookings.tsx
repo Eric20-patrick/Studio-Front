@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   listBookings,
@@ -43,7 +43,7 @@ export default function AdminBookings() {
     getProfessionals()
       .then(setProfessionals)
       .catch(() => {});
-    document.title = 'Agendamentos | Studio Neo';
+    document.title = 'Agendamentos | Salão de Beleza';
   }, []);
 
   const params = {
@@ -564,3 +564,4 @@ function BookingRow({ b, actionId, onConfirm, onComplete, onCancel }: BookingRow
     </div>
   );
 }
+

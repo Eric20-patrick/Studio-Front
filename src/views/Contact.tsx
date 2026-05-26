@@ -19,7 +19,7 @@ export default function ContactPage() {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    document.title = 'Contato | Studio Neo';
+    document.title = 'Contato | Salão de Beleza';
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +33,7 @@ export default function ContactPage() {
       <section className="relative h-[40vh] flex items-center justify-center overflow-hidden">
         <Image
           src={hero}
-          alt="Studio Neo"
+          alt="Salão de Beleza"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary/90" />

@@ -4,5 +4,29 @@
     "files": [
       "static/chunks/_app-pages-browser_src_components_booking_BookingModal_tsx.js"
     ]
+  },
+  "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings": {
+    "id": "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings",
+    "files": [
+      "static/chunks/_app-pages-browser_src_views_admin_AdminBookings_tsx.js"
+    ]
+  },
+  "app\\admin\\(protected)\\page.tsx -> @/views/admin/AdminDashboard": {
+    "id": "app\\admin\\(protected)\\page.tsx -> @/views/admin/AdminDashboard",
+    "files": [
+      "static/chunks/_app-pages-browser_src_views_admin_AdminDashboard_tsx.js"
+    ]
+  },
+  "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard": {
+    "id": "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard",
+    "files": [
+      "static/chunks/_app-pages-browser_src_views_admin_ReceptionDashboard_tsx.js"
+    ]
+  },
+  "app\\admin\\login\\page.tsx -> @/views/admin/AdminLogin": {
+    "id": "app\\admin\\login\\page.tsx -> @/views/admin/AdminLogin",
+    "files": [
+      "static/chunks/_app-pages-browser_src_views_admin_AdminLogin_tsx.js"
+    ]
   }
 }

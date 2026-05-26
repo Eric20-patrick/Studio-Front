@@ -17,7 +17,7 @@ function AdminLoginForm() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    document.title = 'Login | Studio Neo Admin';
+    document.title = 'Login | Salão de Beleza Admin';
   }, []);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ function AdminLoginForm() {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-scale-in"
       >
         <div className="text-center">
-          <h1 className="text-2xl font-display font-bold">Studio Neo</h1>
+          <h1 className="text-2xl font-display font-bold">Salão de Beleza</h1>
           <p className="text-sm text-muted-foreground mt-1">Acesso administrativo</p>
         </div>
 
