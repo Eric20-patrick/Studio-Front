@@ -21,15 +21,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/(marketing)/equipe/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(marketing)/equipe/page.js"
+      "static/chunks/app/_not-found/page.js"
     ],
     "/(marketing)/servicos/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(marketing)/servicos/page.js"
+    ],
+    "/(marketing)/equipe/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/equipe/page.js"
+    ],
+    "/(marketing)/contato/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(marketing)/contato/page.js"
     ]
   }
 }

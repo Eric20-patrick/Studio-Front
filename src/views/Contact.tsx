@@ -2,18 +2,14 @@
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { SALON_INFO } from '@/constants';
 import {
-  Phone,
-  MapPin,
-  Instagram,
-  Facebook,
   Send,
   CheckCircle,
-  Clock,
   MessageCircle,
   User,
   Mail,
   Sparkles,
 } from 'lucide-react';
+import { FaWhatsapp, FaPhoneAlt, FaMapMarkerAlt, FaRegClock, FaInstagram, FaFacebookF } from 'react-icons/fa';
 import hero from '@/assets/hero.png';
 import Image from 'next/image';
 
@@ -29,13 +25,6 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSent(true);
-  };
-
-  const formatPhone = (phone: string) => {
-    // 5511977485165 → (11) 97748-5165
-    const digits = phone.replace(/\D/g, '');
-    const local = digits.startsWith('55') ? digits.slice(2) : digits;
-    return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
   };
 
   return (
@@ -184,20 +173,18 @@ export default function ContactPage() {
                 href={`https://wa.me/${SALON_INFO.whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Falar no WhatsApp"
                 className="block group"
               >
                 <div className="relative bg-gradient-to-br from-green-500 to-green-600 rounded-xl px-4 py-3 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
                   <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10" />
                   <div className="relative flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                      <MessageCircle size={16} className="text-white" />
+                      <FaWhatsapp size={18} className="text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[9px] font-bold text-white/80 uppercase tracking-widest leading-tight">
+                      <p className="text-white font-bold text-sm leading-tight">
                         WhatsApp
-                      </p>
-                      <p className="text-white font-bold text-sm leading-tight truncate">
-                        {formatPhone(SALON_INFO.whatsapp)}
                       </p>
                     </div>
                   </div>
@@ -205,17 +192,18 @@ export default function ContactPage() {
               </a>
 
               {/* Telefone */}
-              <a href={`tel:+${SALON_INFO.phone}`} className="block group">
+              <a
+                href={`tel:+${SALON_INFO.phone}`}
+                aria-label="Ligar para o salão"
+                className="block group"
+              >
                 <div className="bg-white rounded-xl px-4 py-3 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gold/10 hover:border-gold/30 flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <Phone size={15} className="text-gold-dark" />
+                    <FaPhoneAlt size={14} className="text-gold-dark" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-tight">
+                    <p className="text-black font-bold text-sm leading-tight">
                       Telefone
-                    </p>
-                    <p className="text-black font-bold text-sm leading-tight truncate">
-                      {formatPhone(SALON_INFO.phone)}
                     </p>
                   </div>
                 </div>
@@ -224,7 +212,7 @@ export default function ContactPage() {
               {/* Endereço */}
               <div className="bg-white rounded-xl px-4 py-3 shadow-md border border-gold/10 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 flex items-center justify-center flex-shrink-0">
-                  <MapPin size={15} className="text-gold-dark" />
+                  <FaMapMarkerAlt size={15} className="text-gold-dark" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-tight">
@@ -239,7 +227,7 @@ export default function ContactPage() {
               {/* Horário de funcionamento */}
               <div className="bg-white rounded-xl px-4 py-3 shadow-md border border-gold/10 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 flex items-center justify-center flex-shrink-0">
-                  <Clock size={15} className="text-gold-dark" />
+                  <FaRegClock size={15} className="text-gold-dark" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-tight">
@@ -264,7 +252,7 @@ export default function ContactPage() {
                     aria-label="Instagram"
                     className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-orange-400 flex items-center justify-center text-white hover:scale-110 hover:shadow-md transition-all duration-300"
                   >
-                    <Instagram size={16} />
+                    <FaInstagram size={16} />
                   </a>
                   <a
                     href={SALON_INFO.facebook}
@@ -273,7 +261,7 @@ export default function ContactPage() {
                     aria-label="Facebook"
                     className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white hover:scale-110 hover:shadow-md transition-all duration-300"
                   >
-                    <Facebook size={16} />
+                    <FaFacebookF size={14} />
                   </a>
                 </div>
               </div>
