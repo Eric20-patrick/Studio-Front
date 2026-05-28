@@ -1,14 +1,79 @@
 {
   "app\\(marketing)\\layout.tsx -> @/components/booking/BookingModal": {
-    "id": "app\\(marketing)\\layout.tsx -> @/components/booking/BookingModal",
+    "id": 3324,
     "files": [
-      "static/chunks/_app-pages-browser_src_components_booking_BookingModal_tsx.js"
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/8924-802d22afbd78b3f4.js",
+      "static/chunks/7354.686a378eb08ce2e3.js",
+      "static/chunks/3324.646651f73416b703.js"
     ]
   },
   "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings": {
-    "id": "app\\admin\\(protected)\\agendamentos\\page.tsx -> @/views/admin/AdminBookings",
+    "id": 739,
     "files": [
-      "static/chunks/_app-pages-browser_src_views_admin_AdminBookings_tsx.js"
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/9919-ac07eb9b0854490b.js",
+      "static/chunks/1713-841dc1f0d8eaae76.js",
+      "static/chunks/5117.dead48867543f90c.js",
+      "static/chunks/739.08127ae2aa3b072d.js"
+    ]
+  },
+  "app\\admin\\(protected)\\clientes\\page.tsx -> @/views/admin/AdminClients": {
+    "id": 2688,
+    "files": [
+      "static/chunks/2688.3ce13a375fc7abf5.js"
+    ]
+  },
+  "app\\admin\\(protected)\\delegacao\\page.tsx -> @/views/admin/AdminDelegation": {
+    "id": 6932,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/6932.2105a415a86ae1c6.js"
+    ]
+  },
+  "app\\admin\\(protected)\\page.tsx -> @/views/admin/AdminDashboard": {
+    "id": 6755,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/9919-ac07eb9b0854490b.js",
+      "static/chunks/1713-841dc1f0d8eaae76.js",
+      "static/chunks/6755.e1def00fa2a7367c.js"
+    ]
+  },
+  "app\\admin\\(protected)\\procedimentos\\page.tsx -> @/views/admin/AdminProcedures": {
+    "id": 1603,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/9919-ac07eb9b0854490b.js",
+      "static/chunks/1713-841dc1f0d8eaae76.js",
+      "static/chunks/1603.3b88218b0d34e36e.js"
+    ]
+  },
+  "app\\admin\\(protected)\\profissionais\\page.tsx -> @/views/admin/AdminProfessionals": {
+    "id": 2229,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/9919-ac07eb9b0854490b.js",
+      "static/chunks/1713-841dc1f0d8eaae76.js",
+      "static/chunks/3145-165f96576a7978c0.js",
+      "static/chunks/2229.579d46d9999fa33d.js"
+    ]
+  },
+  "app\\admin\\(protected)\\recepcao\\page.tsx -> @/views/admin/ReceptionDashboard": {
+    "id": 6242,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/9919-ac07eb9b0854490b.js",
+      "static/chunks/1713-841dc1f0d8eaae76.js",
+      "static/chunks/5117.dead48867543f90c.js",
+      "static/chunks/4535.3f850b6ea0987a57.js"
+    ]
+  },
+  "app\\admin\\login\\page.tsx -> @/views/admin/AdminLogin": {
+    "id": 8736,
+    "files": [
+      "static/chunks/4438-0acf8c3b2c6f3aaf.js",
+      "static/chunks/8736.3aa646479e43f8df.js"
     ]
   }
 }
