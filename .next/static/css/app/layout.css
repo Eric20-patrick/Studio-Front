@@ -1,7 +1,7 @@
 /*!*****************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/app/globals.css ***!
   \*****************************************************************************************************************************************************************************************************************************************************************/
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cinzel:wght@400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 *, ::before, ::after{
   --tw-border-spacing-x: 0;
@@ -522,7 +522,7 @@ h1,
   h4,
   h5,
   h6 {
-    font-family: "Playfair Display", serif;
+    font-family: "Cormorant Garamond", serif;
   }
 
 :root {
@@ -611,7 +611,7 @@ h1,
   h4,
   h5,
   h6{
-  font-family: "Playfair Display", serif;
+  font-family: "Cormorant Garamond", serif;
 }
 .container{
   width: 100%;
@@ -945,6 +945,9 @@ h1,
 .mb-12{
   margin-bottom: 3rem;
 }
+.mb-16{
+  margin-bottom: 4rem;
+}
 .mb-2{
   margin-bottom: 0.5rem;
 }
@@ -984,8 +987,8 @@ h1,
 .mt-1\.5{
   margin-top: 0.375rem;
 }
-.mt-10{
-  margin-top: 2.5rem;
+.mt-12{
+  margin-top: 3rem;
 }
 .mt-2{
   margin-top: 0.5rem;
@@ -1132,6 +1135,9 @@ h1,
 .h-\[1px\]{
   height: 1px;
 }
+.h-\[400px\]{
+  height: 400px;
+}
 .h-\[40vh\]{
   height: 40vh;
 }
@@ -1186,11 +1192,14 @@ h1,
 .min-h-0{
   min-height: 0px;
 }
+.min-h-\[220px\]{
+  min-height: 220px;
+}
 .min-h-\[80px\]{
   min-height: 80px;
 }
-.min-h-\[85vh\]{
-  min-height: 85vh;
+.min-h-\[90vh\]{
+  min-height: 90vh;
 }
 .min-h-full{
   min-height: 100%;
@@ -1376,6 +1385,9 @@ h1,
 }
 .max-w-xl{
   max-width: 36rem;
+}
+.max-w-xs{
+  max-width: 20rem;
 }
 .flex-1{
   flex: 1 1 0%;
@@ -1966,9 +1978,6 @@ h1,
 .border-white\/10{
   border-color: rgb(255 255 255 / 0.1);
 }
-.border-white\/20{
-  border-color: rgb(255 255 255 / 0.2);
-}
 .border-yellow-200{
   --tw-border-opacity: 1;
   border-color: rgb(254 240 138 / var(--tw-border-opacity, 1));
@@ -2184,8 +2193,8 @@ h1,
   --tw-gradient-to: rgb(250 248 245 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
-.from-black\/90{
-  --tw-gradient-from: rgb(0 0 0 / 0.9) var(--tw-gradient-from-position);
+.from-black\/95{
+  --tw-gradient-from: rgb(0 0 0 / 0.95) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
@@ -2224,6 +2233,11 @@ h1,
   --tw-gradient-to: rgb(236 72 153 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
+.from-primary\/30{
+  --tw-gradient-from: rgb(0 0 0 / 0.3) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
 .from-primary\/40{
   --tw-gradient-from: rgb(0 0 0 / 0.4) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
@@ -2254,9 +2268,9 @@ h1,
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
-.via-black\/60{
+.via-black\/75{
   --tw-gradient-to: rgb(0 0 0 / 0)  var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(0 0 0 / 0.6) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  --tw-gradient-stops: var(--tw-gradient-from), rgb(0 0 0 / 0.75) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 .via-gold{
   --tw-gradient-to: hsl(var(--gold) / 0)  var(--tw-gradient-to-position);
@@ -2290,11 +2304,8 @@ h1,
   --tw-gradient-to: rgb(255 255 255 / 0)  var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), rgb(255 255 255 / 0.4) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
-.to-\[\#FAF7F2\]{
-  --tw-gradient-to: #FAF7F2 var(--tw-gradient-to-position);
-}
-.to-black\/20{
-  --tw-gradient-to: rgb(0 0 0 / 0.2) var(--tw-gradient-to-position);
+.to-black\/45{
+  --tw-gradient-to: rgb(0 0 0 / 0.45) var(--tw-gradient-to-position);
 }
 .to-blue-700{
   --tw-gradient-to: #1d4ed8 var(--tw-gradient-to-position);
@@ -2337,9 +2348,6 @@ h1,
 }
 .fill-current{
   fill: currentColor;
-}
-.fill-gold{
-  fill: hsl(var(--gold));
 }
 .object-contain{
   -o-object-fit: contain;
@@ -2433,10 +2441,6 @@ h1,
 .px-6{
   padding-left: 1.5rem;
   padding-right: 1.5rem;
-}
-.px-7{
-  padding-left: 1.75rem;
-  padding-right: 1.75rem;
 }
 .px-8{
   padding-left: 2rem;
@@ -2566,6 +2570,9 @@ h1,
 .pt-2{
   padding-top: 0.5rem;
 }
+.pt-24{
+  padding-top: 6rem;
+}
 .pt-3{
   padding-top: 0.75rem;
 }
@@ -2594,7 +2601,7 @@ h1,
   vertical-align: middle;
 }
 .font-display{
-  font-family: "Playfair Display", serif;
+  font-family: "Cormorant Garamond", serif;
 }
 .font-mono{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -2700,6 +2707,9 @@ h1,
 }
 .leading-relaxed{
   line-height: 1.625;
+}
+.leading-snug{
+  line-height: 1.375;
 }
 .leading-tight{
   line-height: 1.25;
@@ -2857,6 +2867,9 @@ h1,
 }
 .text-white\/80{
   color: rgb(255 255 255 / 0.8);
+}
+.text-white\/90{
+  color: rgb(255 255 255 / 0.9);
 }
 .text-yellow-700{
   --tw-text-opacity: 1;
@@ -3385,10 +3398,6 @@ h1,
   border-color: hsl(var(--gold) / 0.5);
 }
 
-.hover\:border-gold\/60:hover{
-  border-color: hsl(var(--gold) / 0.6);
-}
-
 .hover\:bg-accent:hover{
   background-color: hsl(var(--accent));
 }
@@ -3419,6 +3428,10 @@ h1,
   background-color: rgb(4 120 87 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-gold:hover{
+  background-color: hsl(var(--gold));
+}
+
 .hover\:bg-gold-dark:hover{
   background-color: hsl(var(--gold-dark));
 }
@@ -3429,10 +3442,6 @@ h1,
 
 .hover\:bg-gold\/20:hover{
   background-color: hsl(var(--gold) / 0.2);
-}
-
-.hover\:bg-gold\/40:hover{
-  background-color: hsl(var(--gold) / 0.4);
 }
 
 .hover\:bg-gold\/5:hover{
@@ -3583,6 +3592,10 @@ h1,
 
 .hover\:text-gold:hover {
     color: hsl(var(--gold));
+  }
+
+.hover\:bg-gold:hover {
+    background-color: hsl(var(--gold));
   }
 
 .hover\:border-gold:hover {
@@ -3788,12 +3801,6 @@ h1,
 .group:hover .group-hover\:scale-100{
   --tw-scale-x: 1;
   --tw-scale-y: 1;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.group:hover .group-hover\:scale-105{
-  --tw-scale-x: 1.05;
-  --tw-scale-y: 1.05;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
@@ -4819,6 +4826,10 @@ h1,
     gap: 1rem;
   }
 
+  .md\:gap-6{
+    gap: 1.5rem;
+  }
+
   .md\:border-0{
     border-width: 0px;
   }
@@ -4908,6 +4919,11 @@ h1,
     line-height: 1.25rem;
   }
 
+  .md\:text-xl{
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+
   .md\:opacity-0{
     opacity: 0;
   }
@@ -4978,6 +4994,11 @@ h1,
 
   .lg\:p-10{
     padding: 2.5rem;
+  }
+
+  .lg\:text-7xl{
+    font-size: 4.5rem;
+    line-height: 1;
   }
 }
 

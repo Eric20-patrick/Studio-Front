@@ -1,8 +1,8 @@
 {
-  "/(marketing)/quem-somos/page": "app/(marketing)/quem-somos/page.js",
+  "/(marketing)/equipe/page": "app/(marketing)/equipe/page.js",
+  "/(marketing)/galeria/page": "app/(marketing)/galeria/page.js",
   "/(marketing)/page": "app/(marketing)/page.js",
-  "/admin/login/page": "app/admin/login/page.js",
-  "/admin/(protected)/recepcao/page": "app/admin/(protected)/recepcao/page.js",
-  "/admin/(protected)/page": "app/admin/(protected)/page.js",
+  "/(marketing)/servicos/page": "app/(marketing)/servicos/page.js",
+  "/(marketing)/quem-somos/page": "app/(marketing)/quem-somos/page.js",
   "/admin/(protected)/agendamentos/page": "app/admin/(protected)/agendamentos/page.js"
 }

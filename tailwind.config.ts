@@ -14,7 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Playfair Display"', "serif"],
+        display: ['"Cormorant Garamond"', "serif"],
+        decor: ['"Cinzel"', "serif"],
         body: ["Montserrat", "sans-serif"],
       },
       colors: {
